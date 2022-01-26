@@ -2,7 +2,8 @@
   "name": "@osmoscraft/web-rendering-library",
   "version": "0.0.1",
   "description": "",
-  "main": "index.js",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
   "scripts": {
     "dev": "ts-node-dev --transpile-only --respawn --watch src --project scripts/tsconfig.json scripts/build.ts"
   },
