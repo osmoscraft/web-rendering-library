@@ -42,6 +42,11 @@ function myRender() {
 myRender();
 
 ```
+## API
+
+```TypeScript
+render(templateElement, containerElement, dataObject);
+```
 
 ## Pure rendering
 
