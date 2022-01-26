@@ -1,0 +1,26 @@
+{
+  "name": "@osmoscraft/web-rendering-library",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "ts-node-dev --transpile-only --respawn --watch src --project scripts/tsconfig.json scripts/build.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/osmoscraft/web-rendering-library.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/osmoscraft/web-rendering-library/issues"
+  },
+  "homepage": "https://github.com/osmoscraft/web-rendering-library#readme",
+  "devDependencies": {
+    "@osmoscraft/web-testing-library": "^0.0.1",
+    "@types/node": "^17.0.12",
+    "esbuild": "^0.14.14",
+    "prettier": "^2.5.1",
+    "ts-node-dev": "^1.1.8"
+  }
+}
