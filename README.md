@@ -65,7 +65,9 @@ To build reactive web component with this library, you need to re-render wheneve
 
 It's recommended each web component manages its own lifecycle by calling `render()` at the right time in their own lifecycle hooks. Use the platform. Don't re-invent it.
 
-## Expression
+## Templating syntax
+
+### Expression
 
 Simple variable
 
@@ -96,8 +98,6 @@ Negation
 ```TypeScript
 render(template, container, { myBooleanVar: true });
 ```
-
-## Template syntax
 
 ### Logic-based rendering
 
