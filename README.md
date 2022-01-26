@@ -48,7 +48,7 @@ myRender();
 render(templateElement, containerElement, dataObject);
 ```
 
-## Pure rendering
+### Pure rendering
 
 To achieve high performance, this library treats all components as pure. If a components input doesn't change, re-render will have no effect on it.
 
@@ -62,6 +62,8 @@ To build reactive web component with this library, you need to re-render wheneve
 - Everytime when some user input updates the data model that is used by the `render()`.
   - e.g. `@click` handler function should usually call `render()` in the end.
 - In `attributeChangedCallback()`
+
+It's recommended each web component manages its own lifecycle by calling `render()` at the right time in their own lifecycle hooks. Use the platform. Don't re-invent it.
 
 ## Expression
 
