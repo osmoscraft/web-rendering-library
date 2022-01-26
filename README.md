@@ -6,6 +6,8 @@ Minimalist rendering library, optimized for web components.
 - Client side hydration with javascript
 - Re-rendering efficiently reconciles data change
 
+Note: This library export TypeScript. So you will need a modern compiler to use it. Currently only supporting [vite](https://vitejs.dev/) and [esbuild](https://esbuild.github.io/).
+
 ## Get started
 
 ```sh
