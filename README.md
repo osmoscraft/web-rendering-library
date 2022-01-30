@@ -106,13 +106,13 @@ render(template, container, { myBooleanVar: true });
 <div $if="myBooleanVar"></div>
 
 <!-- for -->
-<ul $for="myItem in myArrayVar">
-  <li $text="myItem.id"></li>
+<ul>
+  <li $for="myItem in myArrayVar" $text="myItem.id"></li>
 </ul>
 
 <!-- for with key-->
-<ul $for="myItem:id in myArrayVar">
-  <li $text="myItem.id"></li>
+<ul>
+  <li $for="myItem:id in myArrayVar" $text="myItem.id"></li>
 </ul>
 ```
 
