@@ -22,14 +22,5 @@ export function mountEventBindingDirectives(events: { name: string; value: strin
       target.addEventListener(event.name, newHandler);
       (target as any)[`_@${event.name}`] = newHandler;
     }
-
-    // if (eventHandler === undefined) {
-    //   target.removeAttribute(event.name);
-    // } else {
-    //   if ((target as any)[`_:${event.name}`] !== eventHandler) {
-    //     target.setAttribute(event.name, eventHandler);
-    //     (target as any)[`_:${event.name}`] = eventHandler;
-    //   }
-    // }
   });
 }
