@@ -14,7 +14,7 @@ export function useComponent<T extends {} = {}>(
   template: HTMLTemplateElement,
   config?: ComponentConfig
 ) {
-  const effectiveConfig: ComponentConfig = { ...config, ...{ mode: "open" } };
+  const effectiveConfig: ComponentConfig = { ...{ mode: "open" }, ...config };
   const renderTarget = effectiveConfig.mode === "none" ? host : host.attachShadow({ mode: "open" });
 
   return {
@@ -33,17 +33,4 @@ function createRenderer<T>(host: HTMLElement | DocumentFragment, template: HTMLT
 
     render(template, host, newData);
   };
-}
-
-export function html(strings: TemplateStringsArray, ...variables: (string | number)[]): HTMLTemplateElement {
-  const templateHtml = strings.flatMap((item, index) => [item, `${variables[index] ?? ""}`]).join("");
-
-  return createTemplate(templateHtml);
-}
-
-function createTemplate(html: string): HTMLTemplateElement {
-  const template = document.createElement("template");
-  template.innerHTML = html;
-
-  return template;
 }
