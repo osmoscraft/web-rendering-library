@@ -9,9 +9,9 @@ export interface ComponentConfig {
   mode?: ShadowRootMode | "none";
 }
 
-export function useComponent<T extends {} = {}>(
-  host: HTMLElement,
+export function useComponent<T extends {} = any>(
   template: HTMLTemplateElement,
+  host: HTMLElement,
   config?: ComponentConfig
 ) {
   const effectiveConfig: ComponentConfig = { ...{ mode: "open" }, ...config };

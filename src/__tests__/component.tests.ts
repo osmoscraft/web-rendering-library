@@ -6,7 +6,7 @@ import { cleanup, defineTestElement, setupHtml } from "./fixture";
 export const testComponent = describe("Component", () => {
   it("Renders Light DOM", async () => {
     class TestElement1 extends HTMLElement {
-      private component = useComponent(this, html`<div>helloworld</div>`, { mode: "none" });
+      private component = useComponent(html`<div>helloworld</div>`, this, { mode: "none" });
       connectedCallback() {
         this.component.render();
       }
@@ -22,7 +22,7 @@ export const testComponent = describe("Component", () => {
 
   it("Renders Shadow DOM", async () => {
     class TestElement1 extends HTMLElement {
-      private component = useComponent(this, html`<div>helloworld</div>`);
+      private component = useComponent(html`<div>helloworld</div>`, this);
       connectedCallback() {
         this.component.render();
       }
@@ -40,7 +40,7 @@ export const testComponent = describe("Component", () => {
 
   it("Handles binding", async () => {
     class TestElement1 extends HTMLElement {
-      private component = useComponent(this, html`<div $text="myVar"></div>`, { mode: "none" });
+      private component = useComponent(html`<div $text="myVar"></div>`, this, { mode: "none" });
       connectedCallback() {
         this.component.render({ myVar: "helloworld" });
       }
@@ -56,7 +56,7 @@ export const testComponent = describe("Component", () => {
 
   it("Handles update", async () => {
     class TestElement1 extends HTMLElement {
-      private component = useComponent(this, html`<div $text="myVar"></div>`, { mode: "none" });
+      private component = useComponent(html`<div $text="myVar"></div>`, this, { mode: "none" });
       connectedCallback() {
         this.component.render({ myVar: "helloworld" });
         this.component.render({ myVar: "helloworld-updated" });
@@ -76,9 +76,9 @@ export const testComponent = describe("Component", () => {
   it("Handles partial update", async () => {
     class TestElement1 extends HTMLElement {
       private component = useComponent(
-        this,
         html`<div id="var1" $text="myVar"></div>
           <div id="var2" $text="myVar2"></div>`,
+        this,
         { mode: "none" }
       );
       connectedCallback() {
