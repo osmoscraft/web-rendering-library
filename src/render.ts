@@ -47,8 +47,8 @@ function reconcileElementChildren(src: Node, target: Node, data?: any) {
             if (operation.isCreate) {
               // create
               const newNode = srcNode.cloneNode() as Element;
-              target.insertBefore(newNode, targetNodes[targetIndex + 1 + newOffset] ?? null);
               reconcileElement(srcNode as Element, newNode, operation.data);
+              target.insertBefore(newNode, targetNodes[targetIndex + 1 + newOffset] ?? null);
               insertionCount++;
             } else if (operation.isDelete) {
               // delete

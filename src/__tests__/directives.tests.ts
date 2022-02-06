@@ -143,7 +143,7 @@ export const testIfDirective = describe("Directives/$if", () => {
     cleanup();
   });
 
-  it("Attributes available on connect", async () => {
+  it("Attributes availability in lifecycle", async () => {
     const changeRecord: any[] = [];
 
     defineTestElement(
@@ -492,11 +492,41 @@ export const testForDirective = describe("Directives/$for", () => {
     cleanup();
   });
 
+  it("Attributes availability in lifecycle", async () => {
+    const changeRecord: any[] = [];
+
+    defineTestElement(
+      "test-for-1",
+      class TestIf1 extends HTMLElement {
+        static get observedAttributes() {
+          return ["data-var"];
+        }
+
+        connectedCallback() {
+          changeRecord.push(`connect:${this.getAttribute("data-var")}`);
+        }
+
+        attributeChangedCallback() {
+          changeRecord.push(`attr:${this.getAttribute("data-var")}`);
+        }
+      }
+    );
+
+    setupTemplate(`<test-for-1 $for="item in items" :data-var="myVar"></test-for-1>`, {
+      items: [{}],
+      myVar: "helloworld",
+    });
+
+    await expect(changeRecord.join("|")).toEqual("attr:helloworld|connect:helloworld");
+
+    cleanup();
+  });
+
   it("Minimum mutation with keys/Insert", async () => {
     const changeRecord: any[] = [];
 
     defineTestElement(
-      "test-node-01",
+      "test-mutation-1",
       class TestNode01 extends HTMLElement {
         connectedCallback() {
           changeRecord.push("connected");
@@ -505,7 +535,7 @@ export const testForDirective = describe("Directives/$for", () => {
     );
 
     const { update } = setupTemplate(
-      `<test-node-01 $for="itemVar:id in arrayVar" $text="itemVar.text"></test-node-01>`,
+      `<test-mutation-1 $for="itemVar:id in arrayVar" $text="itemVar.text"></test-mutation-1>`,
       {
         arrayVar: [
           {
