@@ -72,4 +72,27 @@ export const testComponent = describe("Component", () => {
 
     cleanup();
   });
+
+  it("Handles partial update", async () => {
+    class TestElement1 extends HTMLElement {
+      private component = useComponent(
+        this,
+        html`<div id="var1" $text="myVar"></div>
+          <div id="var2" $text="myVar2"></div>`,
+        { mode: "none" }
+      );
+      connectedCallback() {
+        this.component.render({ myVar: "value1" });
+        this.component.render({ myVar2: "value2" });
+      }
+    }
+
+    defineTestElement("component-test-element-5", TestElement1);
+    const { container } = setupHtml(`<component-test-element-5></component-test-element-5>`);
+
+    await expect(container.querySelector<HTMLElement>("#var1")?.innerText).toEqual("value1");
+    await expect(container.querySelector<HTMLElement>("#var2")?.innerText).toEqual("value2");
+
+    cleanup();
+  });
 });

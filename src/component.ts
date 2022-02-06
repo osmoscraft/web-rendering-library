@@ -29,8 +29,8 @@ function createRenderer<T>(host: HTMLElement | DocumentFragment, template: HTMLT
     const isUpdate = typeof dataOrUpdate === "function";
 
     const patch = isUpdate ? dataOrUpdate(currentData as T) : dataOrUpdate;
-    const newData = Object.assign({ ...currentData }, patch);
+    Object.assign(currentData, patch);
 
-    render(template, host, newData);
+    render(template, host, currentData);
   };
 }
