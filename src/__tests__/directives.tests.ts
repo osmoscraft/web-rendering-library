@@ -10,6 +10,18 @@ export const testIfDirective = describe("Directives/$if", () => {
     cleanup();
   });
 
+  it("true/Nested", async () => {
+    const { container } = setupTemplate(`<span $if="myVar.innerValue">hello world</span>`, {
+      myVar: { innerValue: true },
+    });
+
+    await expect(container.innerHTML).toEqual(
+      `<!--$if="myVar.innerValue"--><span $if="myVar.innerValue">hello world</span>`
+    );
+
+    cleanup();
+  });
+
   it("undefined", async () => {
     const { container } = setupTemplate(`<span $if="myVar">hello world</span>`);
 
@@ -187,6 +199,19 @@ export const testForDirective = describe("Directives/$for", () => {
         `<li $for="itemVar:myKey in arrayVar">hello world</li>`,
       ].join("")
     );
+
+    cleanup();
+  });
+
+  it("Static items/Nested", async () => {
+    const { container } = setupTemplate(
+      `<span $for="item in parentList">p<span $for="childItem in item.childList" $text="childItem.value"></span></span>`,
+      {
+        parentList: [{ childList: [{ value: 1 }, { value: 2 }] }, { childList: [{ value: 3 }] }],
+      }
+    );
+
+    await expect(container.innerText).toEqual("p12p3");
 
     cleanup();
   });

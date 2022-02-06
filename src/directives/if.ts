@@ -1,3 +1,5 @@
+import { evaluate } from "../evaluate";
+
 export interface IfDirectiveOperations {
   createReference?: () => Node;
   updateReference?: (referenceNode: Node) => void;
@@ -18,7 +20,7 @@ export function getIfDirectiveOperations(
   };
 
   const expression = (srcNode as Element).getAttribute("$if")!;
-  const isSrcOn = !!data?.[expression];
+  const isSrcOn = !!evaluate(expression, data);
   const isReferenceCreated = targetNode?.nodeType === Node.COMMENT_NODE;
   const isTargetOn = isReferenceCreated ? !!(targetNode as any)._$if : false;
 
