@@ -27,7 +27,7 @@ export function getForDirectiveOperations(
   };
 
   const { itemExp, keyExp, arrayExp } = parseExpression((srcNode as Element).getAttribute("$for") ?? "");
-  const srcArray: any[] = data?.[arrayExp] ?? [];
+  const srcArray: any[] = evaluate(arrayExp, data) ?? [];
   const isReferenceCreated = targetNode?.nodeType === Node.COMMENT_NODE;
   const targetArray: any[] = isReferenceCreated ? (targetNode as any)._$for : [];
 

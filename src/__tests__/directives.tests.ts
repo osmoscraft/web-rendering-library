@@ -1,17 +1,29 @@
 import { describe, expect, it } from "@osmoscraft/web-testing-library";
-import { flushAsync, setup, defineTestNode, cleanup } from "./fixture";
+import { flushAsync, setupTemplate, defineTestElement, cleanup } from "./fixture";
 
 export const testIfDirective = describe("Directives/$if", () => {
   it("true", async () => {
-    const { container } = setup(`<span $if="myVar">hello world</span>`, { myVar: true });
+    const { container } = setupTemplate(`<span $if="myVar">hello world</span>`, { myVar: true });
 
     await expect(container.innerHTML).toEqual(`<!--$if="myVar"--><span $if="myVar">hello world</span>`);
 
     cleanup();
   });
 
+  it("true/Nested", async () => {
+    const { container } = setupTemplate(`<span $if="myVar.innerValue">hello world</span>`, {
+      myVar: { innerValue: true },
+    });
+
+    await expect(container.innerHTML).toEqual(
+      `<!--$if="myVar.innerValue"--><span $if="myVar.innerValue">hello world</span>`
+    );
+
+    cleanup();
+  });
+
   it("undefined", async () => {
-    const { container } = setup(`<span $if="myVar">hello world</span>`);
+    const { container } = setupTemplate(`<span $if="myVar">hello world</span>`);
 
     await expect(container.innerHTML).toEqual(`<!--$if="myVar"-->`);
 
@@ -19,7 +31,7 @@ export const testIfDirective = describe("Directives/$if", () => {
   });
 
   it("false", async () => {
-    const { container } = setup(`<span $if="myVar">hello world</span>`, { myVar: false });
+    const { container } = setupTemplate(`<span $if="myVar">hello world</span>`, { myVar: false });
 
     await expect(container.innerHTML).toEqual(`<!--$if="myVar"-->`);
 
@@ -27,7 +39,7 @@ export const testIfDirective = describe("Directives/$if", () => {
   });
 
   it("false to true", async () => {
-    const { container, update } = setup(`<span $if="myVar">hello world</span >`, { myVar: false });
+    const { container, update } = setupTemplate(`<span $if="myVar">hello world</span >`, { myVar: false });
 
     update({ myVar: true });
 
@@ -37,7 +49,7 @@ export const testIfDirective = describe("Directives/$if", () => {
   });
 
   it("true to true", async () => {
-    const { container, update } = setup(`<span $if="myVar">hello world</span >`, { myVar: true });
+    const { container, update } = setupTemplate(`<span $if="myVar">hello world</span >`, { myVar: true });
 
     const before = container.querySelector("span");
     update({ myVar: true });
@@ -50,7 +62,7 @@ export const testIfDirective = describe("Directives/$if", () => {
   });
 
   it("true to false", async () => {
-    const { container, update } = setup(`<span $if="myVar">hello world</span >`, { myVar: true });
+    const { container, update } = setupTemplate(`<span $if="myVar">hello world</span >`, { myVar: true });
 
     update({ myVar: false });
 
@@ -60,7 +72,7 @@ export const testIfDirective = describe("Directives/$if", () => {
   });
 
   it("false to false", async () => {
-    const { container, update } = setup(`<span $if="myVar">hello world</span>`, { myVar: false });
+    const { container, update } = setupTemplate(`<span $if="myVar">hello world</span>`, { myVar: false });
 
     update({ myVar: false });
 
@@ -70,7 +82,7 @@ export const testIfDirective = describe("Directives/$if", () => {
   });
 
   it("Mixed", async () => {
-    const { container } = setup(
+    const { container } = setupTemplate(
       [
         `<span $if="myVar">hello world</span>`,
         `<span $if="myOtherVar">hello world</span>`,
@@ -95,7 +107,7 @@ export const testIfDirective = describe("Directives/$if", () => {
   });
 
   it("Mixed persistence", async () => {
-    const { container, update } = setup(
+    const { container, update } = setupTemplate(
       [
         `<div $if="myVar"><div>1</div><div>2</div></div>`,
         `<div id="test-node" $if="myOtherVar"><div>3</div><div>4</div></div>`,
@@ -130,11 +142,41 @@ export const testIfDirective = describe("Directives/$if", () => {
 
     cleanup();
   });
+
+  it("Attributes availability in lifecycle", async () => {
+    const changeRecord: any[] = [];
+
+    defineTestElement(
+      "test-if-1",
+      class TestIf1 extends HTMLElement {
+        static get observedAttributes() {
+          return ["data-var"];
+        }
+
+        connectedCallback() {
+          changeRecord.push(`connect:${this.getAttribute("data-var")}`);
+        }
+
+        attributeChangedCallback() {
+          changeRecord.push(`attr:${this.getAttribute("data-var")}`);
+        }
+      }
+    );
+
+    setupTemplate(`<test-if-1 $if="show" :data-var="myVar"></test-if-1>`, {
+      show: true,
+      myVar: "helloworld",
+    });
+
+    await expect(changeRecord.join("|")).toEqual("attr:helloworld|connect:helloworld");
+
+    cleanup();
+  });
 });
 
 export const testForDirective = describe("Directives/$for", () => {
   it("Variable undefined", async () => {
-    const { container } = setup(`<li $for="itemVar in arrayVar">hello world</li>`);
+    const { container } = setupTemplate(`<li $for="itemVar in arrayVar">hello world</li>`);
 
     await expect(container.innerHTML).toEqual(`<!--$for="itemVar in arrayVar"-->`);
 
@@ -142,7 +184,7 @@ export const testForDirective = describe("Directives/$for", () => {
   });
 
   it("Empty array", async () => {
-    const { container } = setup(`<li $for="itemVar in arrayVar">hello world</li>`, { arrayVar: [] });
+    const { container } = setupTemplate(`<li $for="itemVar in arrayVar">hello world</li>`, { arrayVar: [] });
 
     await expect(container.innerHTML).toEqual(`<!--$for="itemVar in arrayVar"-->`);
 
@@ -150,7 +192,7 @@ export const testForDirective = describe("Directives/$for", () => {
   });
 
   it("Empty array/Keyed", async () => {
-    const { container } = setup(`<li $for="itemVar:myKey in arrayVar">hello world</li>`, {
+    const { container } = setupTemplate(`<li $for="itemVar:myKey in arrayVar">hello world</li>`, {
       arrayVar: [],
     });
 
@@ -160,7 +202,7 @@ export const testForDirective = describe("Directives/$for", () => {
   });
 
   it("Static items", async () => {
-    const { container } = setup(`<li $for="itemVar in arrayVar">hello world</li>`, { arrayVar: [{}, {}, {}] });
+    const { container } = setupTemplate(`<li $for="itemVar in arrayVar">hello world</li>`, { arrayVar: [{}, {}, {}] });
 
     await expect(container.innerHTML).toEqual(
       [
@@ -175,7 +217,7 @@ export const testForDirective = describe("Directives/$for", () => {
   });
 
   it("Static items/Keyed", async () => {
-    const { container } = setup(`<li $for="itemVar:myKey in arrayVar">hello world</li>`, {
+    const { container } = setupTemplate(`<li $for="itemVar:myKey in arrayVar">hello world</li>`, {
       arrayVar: [{ myKey: 1 }, { myKey: 2 }, { myKey: 3 }],
     });
 
@@ -191,9 +233,22 @@ export const testForDirective = describe("Directives/$for", () => {
     cleanup();
   });
 
+  it("Static items/Nested", async () => {
+    const { container } = setupTemplate(
+      `<span $for="item in parentList">p<span $for="childItem in item.childList" $text="childItem.value"></span></span>`,
+      {
+        parentList: [{ childList: [{ value: 1 }, { value: 2 }] }, { childList: [{ value: 3 }] }],
+      }
+    );
+
+    await expect(container.innerText).toEqual("p12p3");
+
+    cleanup();
+  });
+
   it("Static items/Duplicated keys", async () => {
     await expect(() => {
-      const { container } = setup(`<li $for="itemVar:myKey in arrayVar">hello world</li>`, {
+      const { container } = setupTemplate(`<li $for="itemVar:myKey in arrayVar">hello world</li>`, {
         arrayVar: [{ myKey: 1 }, { myKey: 2 }, { myKey: 1 }],
       });
     }).toThrow();
@@ -202,7 +257,7 @@ export const testForDirective = describe("Directives/$for", () => {
   });
 
   it("Dynamic items", async () => {
-    const { container } = setup(`<li $for="itemVar in arrayVar" $text="itemVar"></li>`, {
+    const { container } = setupTemplate(`<li $for="itemVar in arrayVar" $text="itemVar"></li>`, {
       arrayVar: ["item 1", "item 2", "item 3"],
     });
 
@@ -219,7 +274,7 @@ export const testForDirective = describe("Directives/$for", () => {
   });
 
   it("Parent context", async () => {
-    const { container } = setup(`<li $for="itemVar in arrayVar" $text="parentName"></li>`, {
+    const { container } = setupTemplate(`<li $for="itemVar in arrayVar" $text="parentName"></li>`, {
       arrayVar: [{}, {}],
       parentName: "hello",
     });
@@ -236,7 +291,7 @@ export const testForDirective = describe("Directives/$for", () => {
   });
 
   it("Data update", async () => {
-    const { container, update } = setup(`<li $for="itemVar in arrayVar" $text="itemVar"></li>`, {
+    const { container, update } = setupTemplate(`<li $for="itemVar in arrayVar" $text="itemVar"></li>`, {
       arrayVar: ["item 1", "item 2", "item 3"],
     });
 
@@ -257,7 +312,7 @@ export const testForDirective = describe("Directives/$for", () => {
   });
 
   it("Add items", async () => {
-    const { container, update } = setup(`<li $for="itemVar in arrayVar" $text="itemVar"></li>`, {
+    const { container, update } = setupTemplate(`<li $for="itemVar in arrayVar" $text="itemVar"></li>`, {
       arrayVar: ["item 1", "item 2"],
     });
 
@@ -278,7 +333,7 @@ export const testForDirective = describe("Directives/$for", () => {
   });
 
   it("Remove items", async () => {
-    const { container, update } = setup(`<li $for="itemVar in arrayVar" $text="itemVar"></li>`, {
+    const { container, update } = setupTemplate(`<li $for="itemVar in arrayVar" $text="itemVar"></li>`, {
       arrayVar: ["item 1", "item 2", "item 3"],
     });
 
@@ -298,7 +353,7 @@ export const testForDirective = describe("Directives/$for", () => {
   });
 
   it("Node persistency with keys/Data update", async () => {
-    const { container, update } = setup(`<li $for="itemVar:id in arrayVar" $text="itemVar.text"></li>`, {
+    const { container, update } = setupTemplate(`<li $for="itemVar:id in arrayVar" $text="itemVar.text"></li>`, {
       arrayVar: [
         {
           id: 1,
@@ -343,7 +398,7 @@ export const testForDirective = describe("Directives/$for", () => {
   });
 
   it("Node persistency with keys/Reorder", async () => {
-    const { container, update } = setup(`<li $for="itemVar:id in arrayVar" $text="itemVar.text"></li>`, {
+    const { container, update } = setupTemplate(`<li $for="itemVar:id in arrayVar" $text="itemVar.text"></li>`, {
       arrayVar: [
         {
           id: 1,
@@ -388,7 +443,7 @@ export const testForDirective = describe("Directives/$for", () => {
   });
 
   it("Node persistency with keys/Prepend", async () => {
-    const { container, update } = setup(`<li $for="itemVar:id in arrayVar" $text="itemVar.text"></li>`, {
+    const { container, update } = setupTemplate(`<li $for="itemVar:id in arrayVar" $text="itemVar.text"></li>`, {
       arrayVar: [
         {
           id: 1,
@@ -437,23 +492,63 @@ export const testForDirective = describe("Directives/$for", () => {
     cleanup();
   });
 
+  it("Attributes availability in lifecycle", async () => {
+    const changeRecord: any[] = [];
+
+    defineTestElement(
+      "test-for-1",
+      class TestIf1 extends HTMLElement {
+        static get observedAttributes() {
+          return ["data-var"];
+        }
+
+        connectedCallback() {
+          changeRecord.push(`connect:${this.getAttribute("data-var")}`);
+        }
+
+        attributeChangedCallback() {
+          changeRecord.push(`attr:${this.getAttribute("data-var")}`);
+        }
+      }
+    );
+
+    setupTemplate(`<test-for-1 $for="item in items" :data-var="myVar"></test-for-1>`, {
+      items: [{}],
+      myVar: "helloworld",
+    });
+
+    await expect(changeRecord.join("|")).toEqual("attr:helloworld|connect:helloworld");
+
+    cleanup();
+  });
+
   it("Minimum mutation with keys/Insert", async () => {
     const changeRecord: any[] = [];
 
-    defineTestNode("test-node-01", { onConnected: () => changeRecord.push("connected") });
+    defineTestElement(
+      "test-mutation-1",
+      class TestNode01 extends HTMLElement {
+        connectedCallback() {
+          changeRecord.push("connected");
+        }
+      }
+    );
 
-    const { update } = setup(`<test-node-01 $for="itemVar:id in arrayVar" $text="itemVar.text"></test-node-01>`, {
-      arrayVar: [
-        {
-          id: 1,
-          text: "item 1",
-        },
-        {
-          id: 2,
-          text: "item 2",
-        },
-      ],
-    });
+    const { update } = setupTemplate(
+      `<test-mutation-1 $for="itemVar:id in arrayVar" $text="itemVar.text"></test-mutation-1>`,
+      {
+        arrayVar: [
+          {
+            id: 1,
+            text: "item 1",
+          },
+          {
+            id: 2,
+            text: "item 2",
+          },
+        ],
+      }
+    );
 
     await expect(changeRecord.length).toEqual(2);
 
@@ -480,7 +575,7 @@ export const testForDirective = describe("Directives/$for", () => {
   });
 
   it("Node persistency with keys/Mixed operations", async () => {
-    const { container, update } = setup(`<li $for="itemVar:id in arrayVar" $text="itemVar.text"></li>`, {
+    const { container, update } = setupTemplate(`<li $for="itemVar:id in arrayVar" $text="itemVar.text"></li>`, {
       arrayVar: [
         {
           id: 1,
@@ -549,7 +644,7 @@ export const testForDirective = describe("Directives/$for", () => {
 
 export const testTextDirective = describe("Directives/$text", () => {
   it("Variable undefined", async () => {
-    const { container } = setup(`<p $text="myVar"></p>`);
+    const { container } = setupTemplate(`<p $text="myVar"></p>`);
 
     await expect(container.innerHTML).toEqual(`<p $text="myVar"></p>`);
 
@@ -557,7 +652,7 @@ export const testTextDirective = describe("Directives/$text", () => {
   });
 
   it("string", async () => {
-    const { container } = setup(`<p $text="myVar"></p>`, { myVar: "hello world" });
+    const { container } = setupTemplate(`<p $text="myVar"></p>`, { myVar: "hello world" });
 
     await expect(container.innerHTML).toEqual(`<p $text="myVar">hello world</p>`);
 
@@ -565,7 +660,7 @@ export const testTextDirective = describe("Directives/$text", () => {
   });
 
   it("string/Update", async () => {
-    const { container, update } = setup(`<p $text="myVar"></p>`, { myVar: "hello world" });
+    const { container, update } = setupTemplate(`<p $text="myVar"></p>`, { myVar: "hello world" });
 
     update({ myVar: "hello new world" });
     await expect(container.innerHTML).toEqual(`<p $text="myVar">hello new world</p>`);
@@ -577,14 +672,14 @@ export const testTextDirective = describe("Directives/$text", () => {
 export const testModelDirective = describe("Directives/$model", () => {
   it("Unsupported element", async () => {
     await expect(() => {
-      const { container } = setup(`<div $model="myVar"></div>`);
+      const { container } = setupTemplate(`<div $model="myVar"></div>`);
     }).toThrow();
 
     cleanup();
   });
 
   it("input/undefined", async () => {
-    const { container } = setup(`<input $model="myVar"></div>`);
+    const { container } = setupTemplate(`<input $model="myVar"></div>`);
 
     await expect(container.querySelector("input")!.value).toEqual("");
 
@@ -592,7 +687,7 @@ export const testModelDirective = describe("Directives/$model", () => {
   });
 
   it("input/string", async () => {
-    const { container } = setup(`<input $model="myVar"></div>`, { myVar: "hello" });
+    const { container } = setupTemplate(`<input $model="myVar"></div>`, { myVar: "hello" });
 
     await expect(container.querySelector("input")!.value).toEqual("hello");
 
@@ -600,7 +695,7 @@ export const testModelDirective = describe("Directives/$model", () => {
   });
 
   it("input/string/Persistence", async () => {
-    const { container, update } = setup(`<input $model="myVar"></div>`, { myVar: "hello" });
+    const { container, update } = setupTemplate(`<input $model="myVar"></div>`, { myVar: "hello" });
 
     const input = container.querySelector("input")!;
     input.focus();
@@ -617,7 +712,7 @@ export const testModelDirective = describe("Directives/$model", () => {
   });
 
   it("input/string/Update", async () => {
-    const { container, update } = setup(`<input $model="myVar"></div>`, { myVar: "hello" });
+    const { container, update } = setupTemplate(`<input $model="myVar"></div>`, { myVar: "hello" });
 
     update({
       myVar: "hello2",
@@ -629,7 +724,7 @@ export const testModelDirective = describe("Directives/$model", () => {
   });
 
   it("input/number", async () => {
-    const { container } = setup(`<input $model="myVar"></div>`, { myVar: 100 });
+    const { container } = setupTemplate(`<input $model="myVar"></div>`, { myVar: 100 });
 
     await expect(container.querySelector("input")!.value).toEqual("100");
 
@@ -637,7 +732,7 @@ export const testModelDirective = describe("Directives/$model", () => {
   });
 
   it("textarea/string", async () => {
-    const { container } = setup(`<textarea $model="myVar"></textarea>`, { myVar: "hello" });
+    const { container } = setupTemplate(`<textarea $model="myVar"></textarea>`, { myVar: "hello" });
 
     await expect(container.querySelector("textarea")!.value).toEqual("hello");
 
@@ -645,7 +740,7 @@ export const testModelDirective = describe("Directives/$model", () => {
   });
 
   it("select/string", async () => {
-    const { container } = setup(
+    const { container } = setupTemplate(
       `<select $model="myVar"><option value="1">a</option><option value="2">b</option></select>`,
       { myVar: "2" }
     );
@@ -657,7 +752,7 @@ export const testModelDirective = describe("Directives/$model", () => {
   });
 
   it("checkbox/undefined", async () => {
-    const { container } = setup(`<input type="checkbox" $model="myVar" />`);
+    const { container } = setupTemplate(`<input type="checkbox" $model="myVar" />`);
 
     await expect(container.querySelector("input")!.checked).toEqual(false);
 
@@ -665,7 +760,7 @@ export const testModelDirective = describe("Directives/$model", () => {
   });
 
   it("checkbox/true", async () => {
-    const { container } = setup(`<input type="checkbox" $model="myVar" />`, { myVar: true });
+    const { container } = setupTemplate(`<input type="checkbox" $model="myVar" />`, { myVar: true });
 
     await expect(container.querySelector("input")!.checked).toEqual(true);
 
@@ -673,7 +768,7 @@ export const testModelDirective = describe("Directives/$model", () => {
   });
 
   it("checkbox/false", async () => {
-    const { container } = setup(`<input type="checkbox" $model="myVar" />`, { myVar: false });
+    const { container } = setupTemplate(`<input type="checkbox" $model="myVar" />`, { myVar: false });
 
     await expect(container.querySelector("input")!.checked).toEqual(false);
 
@@ -681,7 +776,7 @@ export const testModelDirective = describe("Directives/$model", () => {
   });
 
   it("checkbox/Persist", async () => {
-    const { container, update } = setup(`<input type="checkbox" $model="myVar" />`, { myVar: true });
+    const { container, update } = setupTemplate(`<input type="checkbox" $model="myVar" />`, { myVar: true });
 
     update({
       myVar: true,
@@ -693,7 +788,7 @@ export const testModelDirective = describe("Directives/$model", () => {
   });
 
   it("checkbox/Update", async () => {
-    const { container, update } = setup(`<input type="checkbox" $model="myVar" />`, { myVar: true });
+    const { container, update } = setupTemplate(`<input type="checkbox" $model="myVar" />`, { myVar: true });
 
     update({
       myVar: false,
@@ -705,7 +800,7 @@ export const testModelDirective = describe("Directives/$model", () => {
   });
 
   it("radio/undefined", async () => {
-    const { container } = setup(`<input type="radio" $model="myVar" />`);
+    const { container } = setupTemplate(`<input type="radio" $model="myVar" />`);
 
     await expect(container.querySelector("input")!.checked).toEqual(false);
 
@@ -713,7 +808,7 @@ export const testModelDirective = describe("Directives/$model", () => {
   });
 
   it("radio/Not selected", async () => {
-    const { container } = setup(`<input name="test" type="radio" value="option1" $model="myVar" />`, {
+    const { container } = setupTemplate(`<input name="test" type="radio" value="option1" $model="myVar" />`, {
       myVar: "option2",
     });
 
@@ -723,7 +818,7 @@ export const testModelDirective = describe("Directives/$model", () => {
   });
 
   it("radio/Selected", async () => {
-    const { container } = setup(`<input name="test" type="radio" value="option1" $model="myVar" />`, {
+    const { container } = setupTemplate(`<input name="test" type="radio" value="option1" $model="myVar" />`, {
       myVar: "option1",
     });
 
@@ -733,7 +828,7 @@ export const testModelDirective = describe("Directives/$model", () => {
   });
 
   it("radio/Multiple", async () => {
-    const { container } = setup(
+    const { container } = setupTemplate(
       `<input name="test" type="radio" value="option1" $model="myVar" /><input name="test" type="radio" value="option2" $model="myVar" />`,
       {
         myVar: "option1",
@@ -747,7 +842,7 @@ export const testModelDirective = describe("Directives/$model", () => {
   });
 
   it("radio/Multiple/Dynamic value", async () => {
-    const { container } = setup(
+    const { container } = setupTemplate(
       `<input name="test" type="radio" :value="value1" $model="myVar" /><input name="test" type="radio" :value="value2" $model="myVar" />`,
       {
         value1: "option1",
@@ -765,7 +860,7 @@ export const testModelDirective = describe("Directives/$model", () => {
 
 export const testAttrBindingDirective = describe("Directives/:<attr>", () => {
   it("Bind/undefined", async () => {
-    const { container } = setup(`<div :id="myVar"></div>`);
+    const { container } = setupTemplate(`<div :id="myVar"></div>`);
 
     await expect(container.innerHTML).toEqual(`<div :id="myVar"></div>`);
 
@@ -773,7 +868,7 @@ export const testAttrBindingDirective = describe("Directives/:<attr>", () => {
   });
 
   it("Bind/string", async () => {
-    const { container } = setup(`<div :id="myVar"></div>`, { myVar: "hello" });
+    const { container } = setupTemplate(`<div :id="myVar"></div>`, { myVar: "hello" });
 
     await expect(container.innerHTML).toEqual(`<div :id="myVar" id="hello"></div>`);
 
@@ -788,7 +883,7 @@ export const testAttrBindingDirective = describe("Directives/:<attr>", () => {
       console.log(changeRecord);
     });
 
-    const { container, update } = setup(`<div :id="myVar"></div>`, { myVar: "hello" });
+    const { container, update } = setupTemplate(`<div :id="myVar"></div>`, { myVar: "hello" });
     await expect(container.innerHTML).toEqual(`<div :id="myVar" id="hello"></div>`);
 
     observer.observe(container.querySelector("div")!, {
@@ -813,7 +908,7 @@ export const testAttrBindingDirective = describe("Directives/:<attr>", () => {
       changeRecord.push(...mutationsList.map((record) => record.attributeName));
     });
 
-    const { container, update } = setup(`<div :id="myVar"></div>`, { myVar: "hello" });
+    const { container, update } = setupTemplate(`<div :id="myVar"></div>`, { myVar: "hello" });
     await expect(container.innerHTML).toEqual(`<div :id="myVar" id="hello"></div>`);
 
     observer.observe(container.querySelector("div")!, {
@@ -838,7 +933,7 @@ export const testAttrBindingDirective = describe("Directives/:<attr>", () => {
       changeRecord.push(...mutationsList.map((record) => record.attributeName));
     });
 
-    const { container, update } = setup(`<div :id="myVar"></div>`, { myVar: "hello" });
+    const { container, update } = setupTemplate(`<div :id="myVar"></div>`, { myVar: "hello" });
     await expect(container.innerHTML).toEqual(`<div :id="myVar" id="hello"></div>`);
 
     observer.observe(container.querySelector("div")!, {
@@ -863,7 +958,7 @@ export const testAttrBindingDirective = describe("Directives/:<attr>", () => {
       changeRecord.push(...mutationsList.map((record) => record.attributeName));
     });
 
-    const { container, update } = setup(`<div :id="myVar"></div>`, { myVar: "hello" });
+    const { container, update } = setupTemplate(`<div :id="myVar"></div>`, { myVar: "hello" });
     await expect(container.innerHTML).toEqual(`<div :id="myVar" id="hello"></div>`);
 
     observer.observe(container.querySelector("div")!, {
@@ -885,7 +980,7 @@ export const testAttrBindingDirective = describe("Directives/:<attr>", () => {
 
 export const testEventBindingDirective = describe("Directives/@event", () => {
   it("Bind/undefined", async () => {
-    const { container } = setup(`<button @click="myHandler"></button>`);
+    const { container } = setupTemplate(`<button @click="myHandler"></button>`);
 
     await expect(container.innerHTML).toEqual(`<button @click="myHandler"></button>`);
 
@@ -894,7 +989,7 @@ export const testEventBindingDirective = describe("Directives/@event", () => {
 
   it("Bind/non-function", async () => {
     await expect(() => {
-      setup(`<button @click="myHandler"></button>`, { myHandler: 100 });
+      setupTemplate(`<button @click="myHandler"></button>`, { myHandler: 100 });
     }).toThrow();
 
     cleanup();
@@ -902,7 +997,7 @@ export const testEventBindingDirective = describe("Directives/@event", () => {
 
   it("Bind/function", async () => {
     const handlingRecords: string[] = [];
-    const { container } = setup(`<button @click="myHandler"></button>`, {
+    const { container } = setupTemplate(`<button @click="myHandler"></button>`, {
       myHandler: () => handlingRecords.push("fired"),
     });
 
@@ -915,7 +1010,7 @@ export const testEventBindingDirective = describe("Directives/@event", () => {
 
   it("Bind/function/this", async () => {
     const handlingRecords: any[] = [];
-    const { container } = setup(`<button @click="myHandler"></button>`, {
+    const { container } = setupTemplate(`<button @click="myHandler"></button>`, {
       myHandler: function () {
         handlingRecords.push(this);
       },
@@ -930,7 +1025,7 @@ export const testEventBindingDirective = describe("Directives/@event", () => {
 
   it("Bind/function/args", async () => {
     const handlingRecords: any[] = [];
-    const { container } = setup(`<button @click="myHandler"></button>`, {
+    const { container } = setupTemplate(`<button @click="myHandler"></button>`, {
       myHandler: (e: Event) => handlingRecords.push(e.target),
     });
 
@@ -946,7 +1041,7 @@ export const testEventBindingDirective = describe("Directives/@event", () => {
 
     const reusedHandler = () => handlingRecords.push("fired");
 
-    const { container, update } = setup(`<button @click="myHandler"></button>`, {
+    const { container, update } = setupTemplate(`<button @click="myHandler"></button>`, {
       myHandler: reusedHandler,
     });
 
@@ -964,7 +1059,7 @@ export const testEventBindingDirective = describe("Directives/@event", () => {
   it("Bind/function/Update", async () => {
     const handlingRecords: string[] = [];
 
-    const { container, update } = setup(`<button @click="myHandler"></button>`, {
+    const { container, update } = setupTemplate(`<button @click="myHandler"></button>`, {
       myHandler: () => handlingRecords.push("fired-A"),
     });
 
@@ -982,7 +1077,7 @@ export const testEventBindingDirective = describe("Directives/@event", () => {
   it("Bind/function/Remove", async () => {
     const handlingRecords: string[] = [];
 
-    const { container, update } = setup(`<button @click="myHandler"></button>`, {
+    const { container, update } = setupTemplate(`<button @click="myHandler"></button>`, {
       myHandler: () => handlingRecords.push("fired"),
     });
 
@@ -1002,7 +1097,7 @@ export const testEventBindingDirective = describe("Directives/@event", () => {
 
     const reusedHandler = () => handlingRecords.push("fired");
 
-    const { container, update } = setup(`<button @click="myHandler"></button>`, {
+    const { container, update } = setupTemplate(`<button @click="myHandler"></button>`, {
       myHandler: reusedHandler,
     });
 

@@ -1,4 +1,5 @@
 import { reportSummary } from "@osmoscraft/web-testing-library";
+import { testComponent } from "./__tests__/component.tests";
 import {
   testAttrBindingDirective,
   testEventBindingDirective,
@@ -7,7 +8,6 @@ import {
   testModelDirective,
   testTextDirective,
 } from "./__tests__/directives.tests";
-
 import { testEvaluate } from "./__tests__/evaluate.tests";
 import { testTemplatingBasic } from "./__tests__/templating.tests";
 
@@ -21,6 +21,7 @@ async function testAll() {
   await testAttrBindingDirective();
   await testEventBindingDirective();
   await testEvaluate();
+  await testComponent();
   const duration = (performance.now() - start) / 1000;
   console.log(`[test] Finished in ${duration}`);
 

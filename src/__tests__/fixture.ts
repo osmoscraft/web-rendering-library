@@ -1,6 +1,6 @@
 import { render } from "..";
 
-export function setup(templateInnerHtml: string, data?: any) {
+export function setupTemplate(templateInnerHtml: string, data?: any) {
   const template = document.createElement("template");
   template.id = "test-fixture-template";
   const container = document.createElement("div");
@@ -23,6 +23,19 @@ export function setup(templateInnerHtml: string, data?: any) {
   };
 }
 
+export function setupHtml(html: string) {
+  const container = document.createElement("div");
+  container.id = "test-fixture-container";
+
+  container.innerHTML = html;
+
+  document.body.appendChild(container);
+
+  return {
+    container,
+  };
+}
+
 export function cleanup() {
   document.getElementById("test-fixture-template")?.remove();
   document.getElementById("test-fixture-container")?.remove();
@@ -36,19 +49,10 @@ export async function flushAsync() {
   });
 }
 
-export interface TestNode01Props {
-  onConnected?: () => any;
-}
-
-export function defineTestNode(name: string, props: TestNode01Props) {
-  class MyTestNode extends HTMLElement {
-    connectedCallback() {
-      props.onConnected?.();
-    }
-  }
-
+export function defineTestElement(name: string, klass: CustomElementConstructor) {
   if (customElements.get(name)) {
     throw new Error(`${name} is already defined by another test. Please make sure each test node usage is unique`);
   }
-  customElements.define(name, MyTestNode);
+
+  return customElements.define(name, klass);
 }

@@ -5,6 +5,7 @@ Minimalist rendering library, optimized for web components.
 - Server side rendering with `<template>` elements
 - Client side hydration with javascript
 - Efficiently update DOM between multiple renderings
+- Composes with browser APIs, instead of wrapping them
 
 Note: This library only exports TypeScript. So you will need a modern compiler to use it. Currently only supporting [vite](https://vitejs.dev/) and [esbuild](https://esbuild.github.io/).
 
@@ -14,39 +15,77 @@ Note: This library only exports TypeScript. So you will need a modern compiler t
 npm i @osmoscraft/web-rendering-library
 ```
 
-Declare template
+Define component in TypeScript
 
-```html
+```TypeScript
+import { html, useComponent } from "@osmoscraft/web-rendering-library";
+
+// This creates a real HTMLTemplateElement
+const template = html`
 <template id="my-template">
   <div $text="count"></div>
   <button @click="handleClick">+1</button>
 </template>
+`
 
-<div id="my-container"></div>
-```
+class MyCounter extends HTMLElement {
+  private component = useComponent(template, this);
 
-Render into container
-
-```TypeScript
-import {render} from "@osmoscraft/web-rendering-library";
-
-const template = document.getElementById("my-template");
-const container = document.getElementById("my-container");
-
-let count = 0;
-
-function myRender() {
-  render(template, container, { count, handleClick: () => { count++; myRender(); });
+  connectedCallback() {
+    this.component.render({
+      count: 0,
+      handleClick: () => {
+        this.component.render(data => ({
+          count: data.count + 1,
+        })),
+      }
+    });
+  }
 }
 
-myRender();
+customElements.define("my-counter", MyCounter);
 
 ```
-## API
+
+Use component in HTML
+
+```html
+<my-counter></my-counter>
+```
+
+## API reference
 
 ```TypeScript
-render(templateElement, containerElement, dataObject);
+// Shadow DOM
+useComponent(host, template);
+useComponent(host, template, { mode: "open" }); // equivalent to above
+
+// Light DOM
+useComponent(host, template, { mode: "none" });
+
+// Update by data patching
+component = useComponent(...args);
+component.render({ ...newPartialDataObject });
+
+// Update by function
+component = useComponent(...args);
+component.render((oldData) => ({ ...newPartialDataObject }));
+
+// Typed data
+interface Model {
+  myVar: string;
+}
+
+component = useComponent<Model>(host, template);
+component.render({ myVar: "helloworld" }); // OK
+component.render({ myVar: 123 }); // Type error
+
+
+// Manual render
+render(template, host, fullDataObject);
 ```
+
+## Usage notes
 
 ### Pure rendering
 
@@ -58,12 +97,10 @@ For each binding, change is determined via strict equal (`===`).
 
 To build reactive web component with this library, you need to re-render whenever an update should affect the UI. For example:
 
-- Initially in `connectedCallback()`
-- Everytime when some user input updates the data model that is used by the `render()`.
-  - e.g. `@click` handler function should usually call `render()` in the end.
-- In `attributeChangedCallback()`
-
-It's recommended each web component manages its own lifecycle by calling `render()` at the right time in their own lifecycle hooks. Use the platform. Don't re-invent it.
+- Initially in `connectedCallback()`, call `component.render()`;
+- On user input
+  - e.g. `@click` handler function should usually call `component.render()` in the end.
+- In `attributeChangedCallback()`, call `component.render()`;
 
 ## Templating syntax
 

@@ -1,9 +1,9 @@
 import { describe, expect, it } from "@osmoscraft/web-testing-library";
-import { cleanup, setup } from "./fixture";
+import { cleanup, setupTemplate } from "./fixture";
 
 export const testTemplatingBasic = describe("Templating/Basic", () => {
   it("Empty template/Render", async () => {
-    const { container } = setup("");
+    const { container } = setupTemplate("");
 
     await expect(container.innerHTML).toEqual("");
 
@@ -11,7 +11,7 @@ export const testTemplatingBasic = describe("Templating/Basic", () => {
   });
 
   it("Empty template/Render", async () => {
-    const { container, update } = setup("");
+    const { container, update } = setupTemplate("");
 
     update();
     await expect(container.innerHTML).toEqual("");
@@ -20,7 +20,7 @@ export const testTemplatingBasic = describe("Templating/Basic", () => {
   });
 
   it("Static template/Render", async () => {
-    const { container } = setup("hello world");
+    const { container } = setupTemplate("hello world");
 
     await expect(container.innerHTML).toEqual("hello world");
 
@@ -28,7 +28,7 @@ export const testTemplatingBasic = describe("Templating/Basic", () => {
   });
 
   it("Static template/Render/Deep", async () => {
-    const { container } = setup("<ul><li>item1</li><li>item2</li></ul>");
+    const { container } = setupTemplate("<ul><li>item1</li><li>item2</li></ul>");
 
     await expect(container.innerHTML).toEqual("<ul><li>item1</li><li>item2</li></ul>");
 
@@ -36,7 +36,7 @@ export const testTemplatingBasic = describe("Templating/Basic", () => {
   });
 
   it("Static template/Update", async () => {
-    const { container, update } = setup("hello world");
+    const { container, update } = setupTemplate("hello world");
 
     update();
 
@@ -46,7 +46,7 @@ export const testTemplatingBasic = describe("Templating/Basic", () => {
   });
 
   it("Static template/Update/Deep", async () => {
-    const { container, update } = setup("<ul><li>item1</li><li>item2</li></ul>");
+    const { container, update } = setupTemplate("<ul><li>item1</li><li>item2</li></ul>");
 
     update();
 
@@ -56,7 +56,7 @@ export const testTemplatingBasic = describe("Templating/Basic", () => {
   });
 
   it("Static template/Update/Persistence", async () => {
-    const { container, update } = setup("<ul><li id='test-node'>item1</li><li>item2</li></ul>");
+    const { container, update } = setupTemplate("<ul><li id='test-node'>item1</li><li>item2</li></ul>");
 
     const before = container.querySelector("#test-node");
 
