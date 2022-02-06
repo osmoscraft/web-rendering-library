@@ -56,6 +56,11 @@ Use component in HTML
 ## API reference
 
 ```TypeScript
+import { html, useComponent, render } from "@osmoscraft/web-rendering-library";
+
+// Create template
+const template = html`<div>Hello world</div>`;
+
 // Shadow DOM
 useComponent(host, template);
 useComponent(host, template, { mode: "open" }); // equivalent to above
@@ -75,14 +80,15 @@ component.render((oldData) => ({ ...newPartialDataObject }));
 interface Model {
   myVar: string;
 }
-
 component = useComponent<Model>(host, template);
 component.render({ myVar: "helloworld" }); // OK
 component.render({ myVar: 123 }); // Type error
 
 
 // Manual render
-render(template, host, fullDataObject);
+const hostElement = document.getElementById("my-host");
+const templateElement = document.createElement("template");
+render(templateElement, hostElement, fullDataObject);
 ```
 
 ## Usage notes
