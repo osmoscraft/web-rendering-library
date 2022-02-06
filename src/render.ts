@@ -80,10 +80,13 @@ function reconcileElementChildren(src: Node, target: Node, data?: any) {
           operations.updateReference?.(targetNodes[targetIndex]);
 
           operations.remove.forEach((node) => target.removeChild(node));
-          operations.clone.forEach((node) => target.insertBefore(node, targetNodes[targetIndex + 1] ?? null));
+          operations.create.forEach((node) => {
+            reconcileElement(srcNode as Element, node, data);
+            target.insertBefore(node, targetNodes[targetIndex + 1] ?? null);
+          });
           operations.update.forEach((node) => reconcileElement(srcNode as Element, node, data));
 
-          targetIndex += operations.clone.length + 1;
+          targetIndex += operations.create.length + 1;
 
           break;
         }

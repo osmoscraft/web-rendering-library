@@ -3,7 +3,7 @@ import { evaluate } from "../evaluate";
 export interface IfDirectiveOperations {
   createReference?: () => Node;
   updateReference?: (referenceNode: Node) => void;
-  clone: Element[];
+  create: Element[];
   update: Element[];
   remove: Element[];
 }
@@ -14,7 +14,7 @@ export function getIfDirectiveOperations(
   data?: any
 ): IfDirectiveOperations {
   const operations: IfDirectiveOperations = {
-    clone: [],
+    create: [],
     update: [],
     remove: [],
   };
@@ -37,8 +37,7 @@ export function getIfDirectiveOperations(
 
   if (isSrcOn && !isTargetOn) {
     const newNode = srcNode.cloneNode() as Element;
-    operations.clone.push(newNode);
-    operations.update.push(newNode);
+    operations.create.push(newNode);
   } else if (isSrcOn && isTargetOn) {
     operations.update.push(targetNode!.nextSibling as Element);
   } else if (!isSrcOn && isTargetOn) {

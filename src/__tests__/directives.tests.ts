@@ -142,6 +142,36 @@ export const testIfDirective = describe("Directives/$if", () => {
 
     cleanup();
   });
+
+  it("Attributes available on connect", async () => {
+    const changeRecord: any[] = [];
+
+    defineTestElement(
+      "test-if-1",
+      class TestIf1 extends HTMLElement {
+        static get observedAttributes() {
+          return ["data-var"];
+        }
+
+        connectedCallback() {
+          changeRecord.push(`connect:${this.getAttribute("data-var")}`);
+        }
+
+        attributeChangedCallback() {
+          changeRecord.push(`attr:${this.getAttribute("data-var")}`);
+        }
+      }
+    );
+
+    setupTemplate(`<test-if-1 $if="show" :data-var="myVar"></test-if-1>`, {
+      show: true,
+      myVar: "helloworld",
+    });
+
+    await expect(changeRecord.join("|")).toEqual("attr:helloworld|connect:helloworld");
+
+    cleanup();
+  });
 });
 
 export const testForDirective = describe("Directives/$for", () => {
