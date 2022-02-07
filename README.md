@@ -141,6 +141,8 @@ render(template, container, { myBooleanVar: true });
 ```html
 <!-- if -->
 <div $if="myBooleanVar"></div>
+<div $if="fooType !== 'sandwich'"></div>
+<div $if="position > 32"></div>
 
 <!-- for -->
 <ul>
@@ -204,3 +206,24 @@ Note: Setting `myVar` to `undefined` removes the attribute.
 ```html
 <button @click="myClickHandler"></button>
 ```
+
+### Suppported expressions
+
+- Unary operators
+  - `!`
+  - `!!`
+- Binary operators
+  - `==`
+  - `!==`
+  - `!=`
+  - `&&`
+  - `||`
+  - `>=`
+  - `>`
+  - `<=`
+  - `<`
+- Primitives
+  - String, e.g. `"hello"`, or `'hello'`
+  - Number (only integers), e.g. `123`, `-52`, or `+999`.
+  - `null`
+  - `undefined`

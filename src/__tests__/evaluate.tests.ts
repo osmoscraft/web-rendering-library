@@ -34,6 +34,22 @@ export const testEvaluate = describe("Evaluate", () => {
     ).toEqual(true);
   });
 
+  it("Variable/boolean/Double negation", async () => {
+    await expect(
+      evaluate("!!myVar", {
+        myVar: false,
+      })
+    ).toEqual(false);
+  });
+
+  it("Variable/boolean/Triple negation", async () => {
+    await expect(
+      evaluate("!!!myVar", {
+        myVar: true,
+      })
+    ).toEqual(false);
+  });
+
   it("Variable/boolean", async () => {
     await expect(
       evaluate("myVar", {
@@ -60,5 +76,45 @@ export const testEvaluate = describe("Evaluate", () => {
         },
       })
     ).toEqual(true);
+  });
+
+  it("Expression/Boolean primitive", async () => {
+    await expect(evaluate("true === true", {})).toEqual(true);
+    await expect(evaluate("true === false", {})).toEqual(false);
+    await expect(evaluate("true !== true", {})).toEqual(false);
+    await expect(evaluate("true !== false", {})).toEqual(true);
+    await expect(evaluate("!true !== !false", {})).toEqual(true);
+    await expect(evaluate("true === myBool", { myBool: true })).toEqual(true);
+    await expect(evaluate("true !== myBool", { myBool: true })).toEqual(false);
+    await expect(evaluate("myBool !== myOtherBool", { myBool: true, myOtherBool: false })).toEqual(true);
+  });
+
+  it("Expression/Nullish primitive", async () => {
+    await expect(evaluate("null == null", {})).toEqual(true);
+    await expect(evaluate("undefined == undefined", {})).toEqual(true);
+    await expect(evaluate("null == undefined", {})).toEqual(true);
+    await expect(evaluate("!null == true", {})).toEqual(true);
+    await expect(evaluate("!undefined == true", {})).toEqual(true);
+  });
+
+  it("Expression/Integer primitive", async () => {
+    await expect(evaluate("1 === 1", {})).toEqual(true);
+    await expect(evaluate("1 !== 1", {})).toEqual(false);
+    await expect(evaluate("1 > 0", {})).toEqual(true);
+    await expect(evaluate("myVar < 0", { myVar: -1 })).toEqual(true);
+    await expect(evaluate("myVar <= -1", { myVar: -1 })).toEqual(true);
+  });
+
+  it("Expression/String primitive", async () => {
+    await expect(evaluate(`"hello" === "hello"`, {})).toEqual(true);
+    await expect(evaluate(`'hello' === "hello"`, {})).toEqual(true);
+    await expect(evaluate(`"hello" !== "hello"`, {})).toEqual(false);
+    await expect(evaluate(`'hello' !== 'hello'`, {})).toEqual(false);
+    await expect(evaluate(`myVar === "hello"`, { myVar: "hello" })).toEqual(true);
+    await expect(evaluate(`myVar === 'hello'`, { myVar: "hello" })).toEqual(true);
+    await expect(evaluate(`myVar === 'he"llo'`, { myVar: 'he"llo' })).toEqual(true);
+    await expect(evaluate(`myVar === "he'llo"`, { myVar: "he'llo" })).toEqual(true);
+    await expect(evaluate(`myVar === myOtherVar`, { myVar: "hello", myOtherVar: "world" })).toEqual(false);
+    await expect(evaluate(`myVar === myOtherVar`, { myVar: "hello", myOtherVar: "hello" })).toEqual(true);
   });
 });
