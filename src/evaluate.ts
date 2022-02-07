@@ -1,5 +1,5 @@
 const BINARY_BOOL_EXP_PATTERN = /^(.+?)(===?|!==?|&&|\|\||<=?|>=?)(.+)$/;
-const INT_EXP_PATTERN = /^(-|\+)?\d+$/;
+const INT_PATTERN = /^(-|\+)?\d+$/;
 const STRING_PATTERN = /^(?:"(.*)"|'(.*)')$/;
 
 export function evaluate(expression: string, context?: any) {
@@ -35,7 +35,7 @@ function evaluatePostNegationRaw(expression: string, context?: any) {
     case "undefined":
       return undefined;
     default:
-      const intExp = expression.match(INT_EXP_PATTERN)?.[0];
+      const intExp = expression.match(INT_PATTERN)?.[0];
       if (intExp !== undefined) return Number(intExp);
 
       const stringMatch = expression.match(STRING_PATTERN);
