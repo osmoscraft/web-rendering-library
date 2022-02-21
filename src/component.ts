@@ -9,28 +9,46 @@ export interface ComponentConfig {
   mode?: ShadowRootMode | "none";
 }
 
+export interface Component<T> {
+  render: (dataOrUpdate?: Partial<T> | ((data: T) => Partial<T>)) => void;
+  getData: () => T;
+  patchData: (dataOrUpdate?: Partial<T> | ((data: T) => Partial<T>)) => T;
+}
+
 export function useComponent<T extends {} = any>(
   template: HTMLTemplateElement,
   host: HTMLElement,
   config?: ComponentConfig
-) {
+): Component<T> {
   const effectiveConfig: ComponentConfig = { ...{ mode: "open" }, ...config };
   const renderTarget = effectiveConfig.mode === "none" ? host : host.attachShadow({ mode: "open" });
+  const currentData: T = {} as T;
 
-  return {
-    render: createRenderer<T>(renderTarget, template),
-  };
+  return createRenderer<T>(renderTarget, template, currentData);
 }
 
-function createRenderer<T>(host: HTMLElement | DocumentFragment, template: HTMLTemplateElement) {
-  const currentData: T | {} = {};
-
-  return function (dataOrUpdate?: Partial<T> | ((data: T) => Partial<T>)) {
+function createRenderer<T>(host: HTMLElement | DocumentFragment, template: HTMLTemplateElement, data: T) {
+  function patchData(dataOrUpdate?: Partial<T> | ((data: T) => Partial<T>)) {
     const isUpdate = typeof dataOrUpdate === "function";
 
-    const patch = isUpdate ? dataOrUpdate(currentData as T) : dataOrUpdate;
-    Object.assign(currentData, patch);
+    const patch = isUpdate ? dataOrUpdate(data as T) : dataOrUpdate;
+    Object.assign(data, patch);
 
-    render(template, host, currentData);
+    return data;
+  }
+
+  function getData() {
+    return data;
+  }
+
+  function renderWrapper(dataOrUpdate?: Partial<T> | ((data: T) => Partial<T>)) {
+    patchData(dataOrUpdate);
+    render(template, host, data);
+  }
+
+  return {
+    render: renderWrapper,
+    getData,
+    patchData,
   };
 }
