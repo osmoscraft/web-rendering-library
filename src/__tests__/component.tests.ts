@@ -219,4 +219,38 @@ export const testComponent = describe("Component", () => {
 
     cleanup();
   });
+
+  it("Renders in memory", async () => {
+    const renderRecords: string[] = [];
+
+    class TestElement extends HTMLElement {
+      static get observedAttributes() {
+        return ["data-my-attr"];
+      }
+
+      private component = useComponent(html`<div $text="myVar"></div>`, this, { mode: "none" });
+
+      attributeChangedCallback() {
+        renderRecords.push("attr");
+        this.component.render({ myVar: this.getAttribute("data-my-attr") });
+      }
+
+      connectedCallback() {
+        renderRecords.push("connect");
+      }
+    }
+
+    defineTestElement("component-test-element-12", TestElement);
+    const inMemoryDom = document.createElement("div");
+    inMemoryDom.innerHTML = `<component-test-element-12 data-my-attr="hello"></component-test-element-12>`;
+
+    await expect(renderRecords).toEqual(["attr"]);
+    await expect(inMemoryDom.querySelector<HTMLElement>("component-test-element-12")?.innerText).toEqual("hello");
+
+    inMemoryDom.querySelector<HTMLElement>("component-test-element-12")!.setAttribute("data-my-attr", "world");
+    await expect(renderRecords).toEqual(["attr", "attr"]);
+    await expect(inMemoryDom.querySelector<HTMLElement>("component-test-element-12")?.innerText).toEqual("world");
+
+    cleanup();
+  });
 });
