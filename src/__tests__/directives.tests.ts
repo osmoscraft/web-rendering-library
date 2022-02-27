@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@osmoscraft/web-testing-library";
-import { flushAsync, setupTemplate, defineTestElement, cleanup } from "./fixture";
+import { cleanup, defineTestElement, flushAsync, setupTemplate } from "./fixture";
 
 export const testIfDirective = describe("Directives/$if", () => {
   it("true", async () => {
@@ -81,7 +81,7 @@ export const testIfDirective = describe("Directives/$if", () => {
     cleanup();
   });
 
-  it("Mixed", async () => {
+  it("Multi-instance", async () => {
     const { container } = setupTemplate(
       [
         `<span $if="myVar">hello world</span>`,
@@ -106,7 +106,7 @@ export const testIfDirective = describe("Directives/$if", () => {
     cleanup();
   });
 
-  it("Mixed persistence", async () => {
+  it("Multi-instance/Off to On", async () => {
     const { container, update } = setupTemplate(
       [
         `<div $if="myVar"><div>1</div><div>2</div></div>`,
@@ -139,6 +139,22 @@ export const testIfDirective = describe("Directives/$if", () => {
     );
 
     await expect(before === after).toEqual(true);
+
+    cleanup();
+  });
+
+  it("Multi-instance/On to On", async () => {
+    const { container, update } = setupTemplate(`<span $if="true">hello</span><span $if="true">world</span>`, {});
+
+    await expect(container.innerHTML).toEqual(
+      `<!--$if="true"--><span $if="true">hello</span><!--$if="true"--><span $if="true">world</span>`
+    );
+
+    update();
+
+    await expect(container.innerHTML).toEqual(
+      `<!--$if="true"--><span $if="true">hello</span><!--$if="true"--><span $if="true">world</span>`
+    );
 
     cleanup();
   });
@@ -301,6 +317,45 @@ export const testForDirective = describe("Directives/$for", () => {
 
     await expect(container.innerHTML).toEqual(
       [
+        `<!--$for="itemVar in arrayVar"-->`,
+        `<li $for="itemVar in arrayVar" $text="itemVar">item a</li>`,
+        `<li $for="itemVar in arrayVar" $text="itemVar">item b</li>`,
+        `<li $for="itemVar in arrayVar" $text="itemVar">item c</li>`,
+      ].join("")
+    );
+
+    cleanup();
+  });
+
+  it("Multi-instance", async () => {
+    const { container, update } = setupTemplate(
+      `<li $for="itemVar in arrayVar" $text="itemVar"></li><li $for="itemVar in arrayVar" $text="itemVar"></li>`,
+      {
+        arrayVar: ["item 1", "item 2"],
+      }
+    );
+
+    await expect(container.innerHTML).toEqual(
+      [
+        `<!--$for="itemVar in arrayVar"-->`,
+        `<li $for="itemVar in arrayVar" $text="itemVar">item 1</li>`,
+        `<li $for="itemVar in arrayVar" $text="itemVar">item 2</li>`,
+        `<!--$for="itemVar in arrayVar"-->`,
+        `<li $for="itemVar in arrayVar" $text="itemVar">item 1</li>`,
+        `<li $for="itemVar in arrayVar" $text="itemVar">item 2</li>`,
+      ].join("")
+    );
+
+    update({
+      arrayVar: ["item a", "item b", "item c"],
+    });
+
+    await expect(container.innerHTML).toEqual(
+      [
+        `<!--$for="itemVar in arrayVar"-->`,
+        `<li $for="itemVar in arrayVar" $text="itemVar">item a</li>`,
+        `<li $for="itemVar in arrayVar" $text="itemVar">item b</li>`,
+        `<li $for="itemVar in arrayVar" $text="itemVar">item c</li>`,
         `<!--$for="itemVar in arrayVar"-->`,
         `<li $for="itemVar in arrayVar" $text="itemVar">item a</li>`,
         `<li $for="itemVar in arrayVar" $text="itemVar">item b</li>`,

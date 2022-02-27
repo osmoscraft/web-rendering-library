@@ -86,7 +86,8 @@ function reconcileElementChildren(src: Node, target: Node, data?: any) {
           });
           operations.update.forEach((node) => reconcileElement(srcNode as Element, node, data));
 
-          targetIndex += operations.create.length + 1;
+          // skip every node after the reference node
+          targetIndex += operations.create.length + operations.update.length + 1;
 
           break;
         }
