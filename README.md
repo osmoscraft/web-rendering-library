@@ -149,7 +149,12 @@ render(template, container, { myBooleanVar: true });
   <li $for="myItem in myArrayVar" $text="myItem.id"></li>
 </ul>
 
-<!-- for with key-->
+<!-- for, using each item as a unique key -->
+<ul>
+  <li $for="myItem:$self in myArrayVar" $text="myItem"></li>
+</ul>
+
+<!-- for, using each item's child field as unique key -->
 <ul>
   <li $for="myItem:id in myArrayVar" $text="myItem.id"></li>
 </ul>
