@@ -407,7 +407,105 @@ export const testForDirective = describe("Directives/$for", () => {
     cleanup();
   });
 
-  it("Node persistency with keys/Data update", async () => {
+  it("Keyed array/$self key render", async () => {
+    const { container } = setupTemplate(`<li $for="itemVar:$self in arrayVar" $text="itemVar"></li>`, {
+      arrayVar: ["item 1", "item 2"],
+    });
+
+    await expect(container.innerHTML).toEqual(
+      [
+        `<!--$for="itemVar:$self in arrayVar"-->`,
+        `<li $for="itemVar:$self in arrayVar" $text="itemVar">item 1</li>`,
+        `<li $for="itemVar:$self in arrayVar" $text="itemVar">item 2</li>`,
+      ].join("")
+    );
+
+    cleanup();
+  });
+
+  it("Keyed array/$self key/update", async () => {
+    const { container, update } = setupTemplate(`<li $for="itemVar:$self in arrayVar" $text="itemVar"></li>`, {
+      arrayVar: ["item 1", "item 2"],
+    });
+
+    const [firstNodeBefore, secondNodeBefore] = [...container.querySelectorAll("li")];
+
+    update({
+      arrayVar: ["item a", "item 2"],
+    });
+
+    const [firstNodeAfter, secondNodeAfter] = [...container.querySelectorAll("li")];
+
+    await expect(container.innerHTML).toEqual(
+      [
+        `<!--$for="itemVar:$self in arrayVar"-->`,
+        `<li $for="itemVar:$self in arrayVar" $text="itemVar">item a</li>`,
+        `<li $for="itemVar:$self in arrayVar" $text="itemVar">item 2</li>`,
+      ].join("")
+    );
+
+    await expect(firstNodeBefore === firstNodeAfter).toEqual(false);
+    await expect(secondNodeBefore === secondNodeAfter).toEqual(true);
+
+    cleanup();
+  });
+
+  it("Keyed array/$self key/Prepend", async () => {
+    const { container, update } = setupTemplate(`<li $for="itemVar:$self in arrayVar" $text="itemVar"></li>`, {
+      arrayVar: ["item 1", "item 2"],
+    });
+
+    const [firstNodeBefore, secondNodeBefore] = [...container.querySelectorAll("li")];
+
+    update({
+      arrayVar: ["item 99", "item 1", "item 2"],
+    });
+
+    const [_firstNodeAfter, secondNodeAfter, thirdNodeAfter] = [...container.querySelectorAll("li")];
+
+    await expect(container.innerHTML).toEqual(
+      [
+        `<!--$for="itemVar:$self in arrayVar"-->`,
+        `<li $for="itemVar:$self in arrayVar" $text="itemVar">item 99</li>`,
+        `<li $for="itemVar:$self in arrayVar" $text="itemVar">item 1</li>`,
+        `<li $for="itemVar:$self in arrayVar" $text="itemVar">item 2</li>`,
+      ].join("")
+    );
+
+    await expect(firstNodeBefore === secondNodeAfter).toEqual(true);
+    await expect(secondNodeBefore === thirdNodeAfter).toEqual(true);
+
+    cleanup();
+  });
+
+  it("Keyed array/$self key/Reorder", async () => {
+    const { container, update } = setupTemplate(`<li $for="itemVar:$self in arrayVar" $text="itemVar"></li>`, {
+      arrayVar: ["item 1", "item 2"],
+    });
+
+    const [firstNodeBefore, secondNodeBefore] = [...container.querySelectorAll("li")];
+
+    update({
+      arrayVar: ["item 2", "item 1"],
+    });
+
+    const [firstNodeAfter, secondNodeAfter] = [...container.querySelectorAll("li")];
+
+    await expect(container.innerHTML).toEqual(
+      [
+        `<!--$for="itemVar:$self in arrayVar"-->`,
+        `<li $for="itemVar:$self in arrayVar" $text="itemVar">item 2</li>`,
+        `<li $for="itemVar:$self in arrayVar" $text="itemVar">item 1</li>`,
+      ].join("")
+    );
+
+    await expect(firstNodeBefore === secondNodeAfter).toEqual(true);
+    await expect(secondNodeBefore === firstNodeAfter).toEqual(true);
+
+    cleanup();
+  });
+
+  it("Keyed array/child key/update", async () => {
     const { container, update } = setupTemplate(`<li $for="itemVar:id in arrayVar" $text="itemVar.text"></li>`, {
       arrayVar: [
         {
@@ -452,7 +550,7 @@ export const testForDirective = describe("Directives/$for", () => {
     cleanup();
   });
 
-  it("Node persistency with keys/Reorder", async () => {
+  it("Keyed array/child key/reorder", async () => {
     const { container, update } = setupTemplate(`<li $for="itemVar:id in arrayVar" $text="itemVar.text"></li>`, {
       arrayVar: [
         {
@@ -497,7 +595,7 @@ export const testForDirective = describe("Directives/$for", () => {
     cleanup();
   });
 
-  it("Node persistency with keys/Prepend", async () => {
+  it("Keyed array/child key/Prepend", async () => {
     const { container, update } = setupTemplate(`<li $for="itemVar:id in arrayVar" $text="itemVar.text"></li>`, {
       arrayVar: [
         {

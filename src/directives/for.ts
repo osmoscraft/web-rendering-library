@@ -43,20 +43,20 @@ export function getForDirectiveOperations(
   operations.updateReference = (referenceNode: Node) => ((referenceNode as any)._$for = srcArray);
 
   const oldKeyToOffsetMap = new Map<number, number>(
-    targetArray.map((oldData, oldIndex) => [keyExp ? evaluate(keyExp, oldData) : oldIndex, oldIndex])
+    targetArray.map((oldData, oldIndex) => [getKeyValue(keyExp, oldData, oldIndex), oldIndex])
   );
 
   const newKeySet = new Set();
 
   srcArray.forEach((newData, newIndex) => {
-    const newKey = keyExp ? evaluate(keyExp, newData) : newIndex;
-    if (newKeySet.has(newKey)) {
-      throw new Error(`Duplicated key value "${newKey}" found in $for="${itemExp}:${keyExp} in ${arrayExp}"`);
+    const newKeyValue = getKeyValue(keyExp, newData, newIndex);
+    if (newKeySet.has(newKeyValue)) {
+      throw new Error(`Duplicated key value "${newKeyValue}" found in $for="${itemExp}:${keyExp} in ${arrayExp}"`);
     }
-    newKeySet.add(newKey);
+    newKeySet.add(newKeyValue);
 
-    const oldOffset = oldKeyToOffsetMap.get(newKey);
-    oldKeyToOffsetMap.delete(newKey);
+    const oldOffset = oldKeyToOffsetMap.get(newKeyValue);
+    oldKeyToOffsetMap.delete(newKeyValue);
     const isCreate = oldOffset === undefined;
     operations.itemUpdates.push({
       isCreate,
@@ -79,6 +79,12 @@ export function getForDirectiveOperations(
   operations.newCount = srcArray.length;
 
   return operations;
+}
+
+function getKeyValue<T, K>(keyExp: string, data: T, fallback: K) {
+  if (keyExp === "$self") return data;
+  if (keyExp) return evaluate(keyExp, data);
+  return fallback;
 }
 
 function parseExpression(input: string) {
