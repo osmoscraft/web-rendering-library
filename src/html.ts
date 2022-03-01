@@ -1,5 +1,8 @@
 export function html(strings: TemplateStringsArray, ...variables: (string | number)[]): HTMLTemplateElement {
-  const templateHtml = strings.flatMap((item, index) => [item, `${variables[index] ?? ""}`]).join("");
+  const templateHtml = strings
+    .flatMap((item, index) => [item, `${variables[index] ?? ""}`])
+    .join("")
+    .trim();
 
   return createTemplate(templateHtml);
 }

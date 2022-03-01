@@ -9,10 +9,12 @@ import {
   testTextDirective,
 } from "./__tests__/directives.tests";
 import { testEvaluate } from "./__tests__/evaluate.tests";
+import { testHtml } from "./__tests__/html.tests";
 import { testTemplatingBasic } from "./__tests__/templating.tests";
 
 async function testAll() {
   const start = performance.now();
+  await testHtml();
   await testTemplatingBasic();
   await testIfDirective();
   await testForDirective();
