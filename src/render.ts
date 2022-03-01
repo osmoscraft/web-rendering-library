@@ -1,8 +1,8 @@
 import { mountAttrBindingDirectives } from "./directives/attrs";
 import { mountBehaviorDirectives } from "./directives/behaviors";
 import { mountEventBindingDirectives } from "./directives/events";
-import { getForDirectiveOperations } from "./directives/for";
-import { getIfDirectiveOperations } from "./directives/if";
+import { getForDirectiveRenderPlan } from "./directives/for";
+import { getIfDirectiveRenderPlan } from "./directives/if";
 
 export function render(template: HTMLTemplateElement, container: HTMLElement | DocumentFragment, data?: any) {
   reconcileElementChildren(template.content, container, data);
@@ -30,21 +30,21 @@ function reconcileElementChildren(src: Node, target: Node, data?: any) {
         break;
 
       case Node.ELEMENT_NODE:
-        // Element: $for
-        if ((srcNode as Element).hasAttribute("$for")) {
-          const operations = getForDirectiveOperations(srcNode as Element, targetNode, data);
-          if (operations.createReference) {
-            const referenceNode = operations.createReference();
+        // Conditional
+        const plan = getConditionalRenderPlan(srcNode as Element, targetNode, data);
+        if (plan) {
+          if (plan.createReference) {
+            const referenceNode = plan.createReference();
             target.insertBefore(referenceNode, targetNode ?? null);
           }
 
-          operations.updateReference?.(targetNodes[targetIndex]);
+          plan.updateReference?.(targetNodes[targetIndex]);
 
-          const currentNodesSnapshot = [...targetNodes].slice(targetIndex + 1, targetIndex + 1 + operations.oldCount);
+          const currentNodesSnapshot = [...targetNodes].slice(targetIndex + 1, targetIndex + 1 + plan.oldCount);
 
           let insertionCount = 0;
 
-          operations.itemUpdates.forEach((operation, newOffset) => {
+          plan.itemUpdates.forEach((operation, newOffset) => {
             if (operation.isCreate) {
               // create
               const newNode = srcNode.cloneNode() as Element;
@@ -65,35 +65,12 @@ function reconcileElementChildren(src: Node, target: Node, data?: any) {
             }
           });
 
-          targetIndex += operations.newCount + 1;
+          targetIndex += plan.newCount + 1;
 
           break;
         }
 
-        // Element: $if
-        if ((srcNode as Element).hasAttribute("$if")) {
-          const operations = getIfDirectiveOperations(srcNode as Element, targetNode, data);
-          if (operations.createReference) {
-            const referenceNode = operations.createReference();
-            target.insertBefore(referenceNode, targetNode ?? null);
-          }
-
-          operations.updateReference?.(targetNodes[targetIndex]);
-
-          operations.remove.forEach((node) => target.removeChild(node));
-          operations.create.forEach((node) => {
-            reconcileElement(srcNode as Element, node, data);
-            target.insertBefore(node, targetNodes[targetIndex + 1] ?? null);
-          });
-          operations.update.forEach((node) => reconcileElement(srcNode as Element, node, data));
-
-          // skip every node after the reference node
-          targetIndex += operations.create.length + operations.update.length + 1;
-
-          break;
-        }
-
-        // Element: static
+        // Static
         if (!targetNode) {
           targetNode = srcNode.cloneNode();
           target.appendChild(targetNode);
@@ -105,6 +82,31 @@ function reconcileElementChildren(src: Node, target: Node, data?: any) {
         break;
     }
   });
+}
+
+export interface ConditionalRenderPlan {
+  createReference?: () => Node;
+  updateReference?: (referenceNode: Node) => void;
+  itemUpdates: ItemUpdateOperation[];
+  oldCount: number;
+  newCount: number;
+}
+
+export interface ItemUpdateOperation {
+  data?: any;
+  isCreate?: boolean;
+  isDelete?: boolean;
+  oldOffset?: number;
+}
+
+function getConditionalRenderPlan(srcNode: Element, targetNode: Node, data?: any): ConditionalRenderPlan {
+  if ((srcNode as Element).hasAttribute("$for")) {
+    return getForDirectiveRenderPlan(srcNode as Element, targetNode, data);
+  } else if ((srcNode as Element).hasAttribute("$if")) {
+    return getIfDirectiveRenderPlan(srcNode as Element, targetNode, data);
+  } else {
+    return null;
+  }
 }
 
 function reconcileText(src: Node, target: Node) {

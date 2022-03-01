@@ -1,50 +1,44 @@
+import { ConditionalRenderPlan } from "..";
 import { evaluate } from "../evaluate";
 
-export interface IfDirectiveOperations {
-  createReference?: () => Node;
-  updateReference?: (referenceNode: Node) => void;
-  create: Element[];
-  update: Element[];
-  remove: Element[];
-}
-
-export function getIfDirectiveOperations(
+export function getIfDirectiveRenderPlan(
   srcNode: Element,
   targetNode: Node | undefined,
   data?: any
-): IfDirectiveOperations {
-  const operations: IfDirectiveOperations = {
-    create: [],
-    update: [],
-    remove: [],
+): ConditionalRenderPlan {
+  const plan: ConditionalRenderPlan = {
+    itemUpdates: [],
+    oldCount: 0,
+    newCount: 0,
   };
 
   const expression = (srcNode as Element).getAttribute("$if")!;
-  const isSrcOn = !!evaluate(expression, data);
   const isReferenceCreated = targetNode?.nodeType === Node.COMMENT_NODE;
-  const isTargetOn = isReferenceCreated ? !!(targetNode as any)._$if : false;
+  const isNewOn = !!evaluate(expression, data);
+  const isOldOn = isReferenceCreated ? !!(targetNode as any)._$if : false;
 
   if (!isReferenceCreated) {
-    operations.createReference = () => {
+    plan.createReference = () => {
       const refNode = document.createComment(`$if="${expression}"`);
-      (refNode as any)._$if = isSrcOn;
+      (refNode as any)._$if = isNewOn;
 
       return refNode;
     };
   }
 
-  operations.updateReference = (referenceNode: Node) => ((referenceNode as any)._$if = isSrcOn);
+  plan.updateReference = (referenceNode: Node) => ((referenceNode as any)._$if = isNewOn);
 
-  if (isSrcOn && !isTargetOn) {
-    const newNode = srcNode.cloneNode() as Element;
-    operations.create.push(newNode);
-  } else if (isSrcOn && isTargetOn) {
-    operations.update.push(targetNode!.nextSibling as Element);
-  } else if (!isSrcOn && isTargetOn) {
-    operations.remove.push(targetNode!.nextSibling as Element);
-  } else {
-    // no-op
+  if (isNewOn || isOldOn) {
+    plan.itemUpdates.push({
+      isCreate: !isOldOn,
+      isDelete: !isNewOn,
+      data,
+      oldOffset: isOldOn ? 0 : undefined,
+    });
   }
 
-  return operations;
+  plan.oldCount = isOldOn ? 1 : 0;
+  plan.newCount = isNewOn ? 1 : 0;
+
+  return plan;
 }
