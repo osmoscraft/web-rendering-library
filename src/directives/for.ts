@@ -26,14 +26,15 @@ export function getForDirectiveOperations(
     newCount: 0,
   };
 
-  const { itemExp, keyExp, arrayExp } = parseExpression((srcNode as Element).getAttribute("$for") ?? "");
+  const { itemExp, arrayExp } = parseExpression((srcNode as Element).getAttribute("$for") ?? "");
+  const keyExp = (srcNode as Element).getAttribute("$key") ?? "";
   const srcArray: any[] = evaluate(arrayExp, data) ?? [];
   const isReferenceCreated = targetNode?.nodeType === Node.COMMENT_NODE;
   const targetArray: any[] = isReferenceCreated ? (targetNode as any)._$for : [];
 
   if (!isReferenceCreated) {
     operations.createReference = () => {
-      const refNode = document.createComment(`$for="${itemExp}${keyExp ? `:${keyExp}` : ""} in ${arrayExp}"`);
+      const refNode = document.createComment(`$for="${itemExp} in ${arrayExp}"${keyExp ? ` $key="${keyExp}"` : ""}`);
       (refNode as any)._$for = srcArray;
 
       return refNode;
@@ -43,13 +44,13 @@ export function getForDirectiveOperations(
   operations.updateReference = (referenceNode: Node) => ((referenceNode as any)._$for = srcArray);
 
   const oldKeyToOffsetMap = new Map<number, number>(
-    targetArray.map((oldData, oldIndex) => [getKeyValue(keyExp, oldData, oldIndex), oldIndex])
+    targetArray.map((oldData, oldIndex) => [getKeyValue(itemExp, keyExp, oldData, oldIndex), oldIndex])
   );
 
   const newKeySet = new Set();
 
   srcArray.forEach((newData, newIndex) => {
-    const newKeyValue = getKeyValue(keyExp, newData, newIndex);
+    const newKeyValue = getKeyValue(itemExp, keyExp, newData, newIndex);
     if (newKeySet.has(newKeyValue)) {
       throw new Error(`Duplicated key value "${newKeyValue}" found in $for="${itemExp}:${keyExp} in ${arrayExp}"`);
     }
@@ -81,9 +82,8 @@ export function getForDirectiveOperations(
   return operations;
 }
 
-function getKeyValue<T, K>(keyExp: string, data: T, fallback: K) {
-  if (keyExp === "$self") return data;
-  if (keyExp) return evaluate(keyExp, data);
+function getKeyValue<T, K>(itemExp: string, keyExp: string, data: T, fallback: K) {
+  if (keyExp) return evaluate(keyExp, { [itemExp]: data });
   return fallback;
 }
 

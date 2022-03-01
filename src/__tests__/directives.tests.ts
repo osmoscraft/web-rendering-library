@@ -208,11 +208,11 @@ export const testForDirective = describe("Directives/$for", () => {
   });
 
   it("Empty array/Keyed", async () => {
-    const { container } = setupTemplate(`<li $for="itemVar:myKey in arrayVar">hello world</li>`, {
+    const { container } = setupTemplate(`<li $for="itemVar in arrayVar" $key="itemVar.myKey">hello world</li>`, {
       arrayVar: [],
     });
 
-    await expect(container.innerHTML).toEqual([`<!--$for="itemVar:myKey in arrayVar"-->`].join(""));
+    await expect(container.innerHTML).toEqual([`<!--$for="itemVar in arrayVar" $key="itemVar.myKey"-->`].join(""));
 
     cleanup();
   });
@@ -233,16 +233,16 @@ export const testForDirective = describe("Directives/$for", () => {
   });
 
   it("Static items/Keyed", async () => {
-    const { container } = setupTemplate(`<li $for="itemVar:myKey in arrayVar">hello world</li>`, {
+    const { container } = setupTemplate(`<li $for="itemVar in arrayVar" $key="itemVar.myKey">hello world</li>`, {
       arrayVar: [{ myKey: 1 }, { myKey: 2 }, { myKey: 3 }],
     });
 
     await expect(container.innerHTML).toEqual(
       [
-        `<!--$for="itemVar:myKey in arrayVar"-->`,
-        `<li $for="itemVar:myKey in arrayVar">hello world</li>`,
-        `<li $for="itemVar:myKey in arrayVar">hello world</li>`,
-        `<li $for="itemVar:myKey in arrayVar">hello world</li>`,
+        `<!--$for="itemVar in arrayVar" $key="itemVar.myKey"-->`,
+        `<li $for="itemVar in arrayVar" $key="itemVar.myKey">hello world</li>`,
+        `<li $for="itemVar in arrayVar" $key="itemVar.myKey">hello world</li>`,
+        `<li $for="itemVar in arrayVar" $key="itemVar.myKey">hello world</li>`,
       ].join("")
     );
 
@@ -264,7 +264,7 @@ export const testForDirective = describe("Directives/$for", () => {
 
   it("Static items/Duplicated keys", async () => {
     await expect(() => {
-      const { container } = setupTemplate(`<li $for="itemVar:myKey in arrayVar">hello world</li>`, {
+      const { container } = setupTemplate(`<li $for="itemVar in arrayVar" $key="itemVar.myKey">hello world</li>`, {
         arrayVar: [{ myKey: 1 }, { myKey: 2 }, { myKey: 1 }],
       });
     }).toThrow();
@@ -407,24 +407,24 @@ export const testForDirective = describe("Directives/$for", () => {
     cleanup();
   });
 
-  it("Keyed array/$self key render", async () => {
-    const { container } = setupTemplate(`<li $for="itemVar:$self in arrayVar" $text="itemVar"></li>`, {
+  it("Keyed array/primitive key render", async () => {
+    const { container } = setupTemplate(`<li $for="itemVar in arrayVar" $key="itemVar" $text="itemVar"></li>`, {
       arrayVar: ["item 1", "item 2"],
     });
 
     await expect(container.innerHTML).toEqual(
       [
-        `<!--$for="itemVar:$self in arrayVar"-->`,
-        `<li $for="itemVar:$self in arrayVar" $text="itemVar">item 1</li>`,
-        `<li $for="itemVar:$self in arrayVar" $text="itemVar">item 2</li>`,
+        `<!--$for="itemVar in arrayVar" $key="itemVar"-->`,
+        `<li $for="itemVar in arrayVar" $key="itemVar" $text="itemVar">item 1</li>`,
+        `<li $for="itemVar in arrayVar" $key="itemVar" $text="itemVar">item 2</li>`,
       ].join("")
     );
 
     cleanup();
   });
 
-  it("Keyed array/$self key/update", async () => {
-    const { container, update } = setupTemplate(`<li $for="itemVar:$self in arrayVar" $text="itemVar"></li>`, {
+  it("Keyed array/primitive key/update", async () => {
+    const { container, update } = setupTemplate(`<li $for="itemVar in arrayVar" $key="itemVar" $text="itemVar"></li>`, {
       arrayVar: ["item 1", "item 2"],
     });
 
@@ -438,9 +438,9 @@ export const testForDirective = describe("Directives/$for", () => {
 
     await expect(container.innerHTML).toEqual(
       [
-        `<!--$for="itemVar:$self in arrayVar"-->`,
-        `<li $for="itemVar:$self in arrayVar" $text="itemVar">item a</li>`,
-        `<li $for="itemVar:$self in arrayVar" $text="itemVar">item 2</li>`,
+        `<!--$for="itemVar in arrayVar" $key="itemVar"-->`,
+        `<li $for="itemVar in arrayVar" $key="itemVar" $text="itemVar">item a</li>`,
+        `<li $for="itemVar in arrayVar" $key="itemVar" $text="itemVar">item 2</li>`,
       ].join("")
     );
 
@@ -450,8 +450,8 @@ export const testForDirective = describe("Directives/$for", () => {
     cleanup();
   });
 
-  it("Keyed array/$self key/Prepend", async () => {
-    const { container, update } = setupTemplate(`<li $for="itemVar:$self in arrayVar" $text="itemVar"></li>`, {
+  it("Keyed array/primitive key/Prepend", async () => {
+    const { container, update } = setupTemplate(`<li $for="itemVar in arrayVar" $key="itemVar" $text="itemVar"></li>`, {
       arrayVar: ["item 1", "item 2"],
     });
 
@@ -465,10 +465,10 @@ export const testForDirective = describe("Directives/$for", () => {
 
     await expect(container.innerHTML).toEqual(
       [
-        `<!--$for="itemVar:$self in arrayVar"-->`,
-        `<li $for="itemVar:$self in arrayVar" $text="itemVar">item 99</li>`,
-        `<li $for="itemVar:$self in arrayVar" $text="itemVar">item 1</li>`,
-        `<li $for="itemVar:$self in arrayVar" $text="itemVar">item 2</li>`,
+        `<!--$for="itemVar in arrayVar" $key="itemVar"-->`,
+        `<li $for="itemVar in arrayVar" $key="itemVar" $text="itemVar">item 99</li>`,
+        `<li $for="itemVar in arrayVar" $key="itemVar" $text="itemVar">item 1</li>`,
+        `<li $for="itemVar in arrayVar" $key="itemVar" $text="itemVar">item 2</li>`,
       ].join("")
     );
 
@@ -478,8 +478,8 @@ export const testForDirective = describe("Directives/$for", () => {
     cleanup();
   });
 
-  it("Keyed array/$self key/Reorder", async () => {
-    const { container, update } = setupTemplate(`<li $for="itemVar:$self in arrayVar" $text="itemVar"></li>`, {
+  it("Keyed array/primitive key/Reorder", async () => {
+    const { container, update } = setupTemplate(`<li $for="itemVar in arrayVar" $key="itemVar" $text="itemVar"></li>`, {
       arrayVar: ["item 1", "item 2"],
     });
 
@@ -493,9 +493,9 @@ export const testForDirective = describe("Directives/$for", () => {
 
     await expect(container.innerHTML).toEqual(
       [
-        `<!--$for="itemVar:$self in arrayVar"-->`,
-        `<li $for="itemVar:$self in arrayVar" $text="itemVar">item 2</li>`,
-        `<li $for="itemVar:$self in arrayVar" $text="itemVar">item 1</li>`,
+        `<!--$for="itemVar in arrayVar" $key="itemVar"-->`,
+        `<li $for="itemVar in arrayVar" $key="itemVar" $text="itemVar">item 2</li>`,
+        `<li $for="itemVar in arrayVar" $key="itemVar" $text="itemVar">item 1</li>`,
       ].join("")
     );
 
@@ -506,18 +506,21 @@ export const testForDirective = describe("Directives/$for", () => {
   });
 
   it("Keyed array/child key/update", async () => {
-    const { container, update } = setupTemplate(`<li $for="itemVar:id in arrayVar" $text="itemVar.text"></li>`, {
-      arrayVar: [
-        {
-          id: 1,
-          text: "item 1",
-        },
-        {
-          id: 2,
-          text: "item 2",
-        },
-      ],
-    });
+    const { container, update } = setupTemplate(
+      `<li $for="itemVar in arrayVar" $key="itemVar.id" $text="itemVar.text"></li>`,
+      {
+        arrayVar: [
+          {
+            id: 1,
+            text: "item 1",
+          },
+          {
+            id: 2,
+            text: "item 2",
+          },
+        ],
+      }
+    );
 
     const [firstNodeBefore, secondNodeBefore] = [...container.querySelectorAll("li")];
 
@@ -538,9 +541,9 @@ export const testForDirective = describe("Directives/$for", () => {
 
     await expect(container.innerHTML).toEqual(
       [
-        `<!--$for="itemVar:id in arrayVar"-->`,
-        `<li $for="itemVar:id in arrayVar" $text="itemVar.text">item a</li>`,
-        `<li $for="itemVar:id in arrayVar" $text="itemVar.text">item b</li>`,
+        `<!--$for="itemVar in arrayVar" $key="itemVar.id"-->`,
+        `<li $for="itemVar in arrayVar" $key="itemVar.id" $text="itemVar.text">item a</li>`,
+        `<li $for="itemVar in arrayVar" $key="itemVar.id" $text="itemVar.text">item b</li>`,
       ].join("")
     );
 
@@ -551,18 +554,21 @@ export const testForDirective = describe("Directives/$for", () => {
   });
 
   it("Keyed array/child key/reorder", async () => {
-    const { container, update } = setupTemplate(`<li $for="itemVar:id in arrayVar" $text="itemVar.text"></li>`, {
-      arrayVar: [
-        {
-          id: 1,
-          text: "item 1",
-        },
-        {
-          id: 2,
-          text: "item 2",
-        },
-      ],
-    });
+    const { container, update } = setupTemplate(
+      `<li $for="itemVar in arrayVar" $key="itemVar.id" $text="itemVar.text"></li>`,
+      {
+        arrayVar: [
+          {
+            id: 1,
+            text: "item 1",
+          },
+          {
+            id: 2,
+            text: "item 2",
+          },
+        ],
+      }
+    );
 
     const [firstNodeBefore, secondNodeBefore] = [...container.querySelectorAll("li")];
 
@@ -583,9 +589,9 @@ export const testForDirective = describe("Directives/$for", () => {
 
     await expect(container.innerHTML).toEqual(
       [
-        `<!--$for="itemVar:id in arrayVar"-->`,
-        `<li $for="itemVar:id in arrayVar" $text="itemVar.text">item 2</li>`,
-        `<li $for="itemVar:id in arrayVar" $text="itemVar.text">item 1</li>`,
+        `<!--$for="itemVar in arrayVar" $key="itemVar.id"-->`,
+        `<li $for="itemVar in arrayVar" $key="itemVar.id" $text="itemVar.text">item 2</li>`,
+        `<li $for="itemVar in arrayVar" $key="itemVar.id" $text="itemVar.text">item 1</li>`,
       ].join("")
     );
 
@@ -596,18 +602,21 @@ export const testForDirective = describe("Directives/$for", () => {
   });
 
   it("Keyed array/child key/Prepend", async () => {
-    const { container, update } = setupTemplate(`<li $for="itemVar:id in arrayVar" $text="itemVar.text"></li>`, {
-      arrayVar: [
-        {
-          id: 1,
-          text: "item 1",
-        },
-        {
-          id: 2,
-          text: "item 2",
-        },
-      ],
-    });
+    const { container, update } = setupTemplate(
+      `<li $for="itemVar in arrayVar" $key="itemVar.id" $text="itemVar.text"></li>`,
+      {
+        arrayVar: [
+          {
+            id: 1,
+            text: "item 1",
+          },
+          {
+            id: 2,
+            text: "item 2",
+          },
+        ],
+      }
+    );
 
     const [firstNodeBefore, secondNodeBefore] = [...container.querySelectorAll("li")];
 
@@ -632,10 +641,10 @@ export const testForDirective = describe("Directives/$for", () => {
 
     await expect(container.innerHTML).toEqual(
       [
-        `<!--$for="itemVar:id in arrayVar"-->`,
-        `<li $for="itemVar:id in arrayVar" $text="itemVar.text">item 99</li>`,
-        `<li $for="itemVar:id in arrayVar" $text="itemVar.text">item 1</li>`,
-        `<li $for="itemVar:id in arrayVar" $text="itemVar.text">item 2</li>`,
+        `<!--$for="itemVar in arrayVar" $key="itemVar.id"-->`,
+        `<li $for="itemVar in arrayVar" $key="itemVar.id" $text="itemVar.text">item 99</li>`,
+        `<li $for="itemVar in arrayVar" $key="itemVar.id" $text="itemVar.text">item 1</li>`,
+        `<li $for="itemVar in arrayVar" $key="itemVar.id" $text="itemVar.text">item 2</li>`,
       ].join("")
     );
 
@@ -688,7 +697,7 @@ export const testForDirective = describe("Directives/$for", () => {
     );
 
     const { update } = setupTemplate(
-      `<test-mutation-1 $for="itemVar:id in arrayVar" $text="itemVar.text"></test-mutation-1>`,
+      `<test-mutation-1 $for="itemVar in arrayVar" $key="itemVar.id" $text="itemVar.text"></test-mutation-1>`,
       {
         arrayVar: [
           {
@@ -728,26 +737,29 @@ export const testForDirective = describe("Directives/$for", () => {
   });
 
   it("Node persistency with keys/Mixed operations", async () => {
-    const { container, update } = setupTemplate(`<li $for="itemVar:id in arrayVar" $text="itemVar.text"></li>`, {
-      arrayVar: [
-        {
-          id: 1,
-          text: "item 1",
-        },
-        {
-          id: 2,
-          text: "item 2",
-        },
-        {
-          id: 3,
-          text: "item 3",
-        },
-        {
-          id: 4,
-          text: "item 4",
-        },
-      ],
-    });
+    const { container, update } = setupTemplate(
+      `<li $for="itemVar in arrayVar" $key="itemVar.id" $text="itemVar.text"></li>`,
+      {
+        arrayVar: [
+          {
+            id: 1,
+            text: "item 1",
+          },
+          {
+            id: 2,
+            text: "item 2",
+          },
+          {
+            id: 3,
+            text: "item 3",
+          },
+          {
+            id: 4,
+            text: "item 4",
+          },
+        ],
+      }
+    );
 
     const [firstNodeBefore, _secondNodeBefore, thirdNodeBefore, fourthNodeBefore] = [
       ...container.querySelectorAll("li"),
@@ -779,11 +791,11 @@ export const testForDirective = describe("Directives/$for", () => {
 
     await expect(container.innerHTML).toEqual(
       [
-        `<!--$for="itemVar:id in arrayVar"-->`,
-        `<li $for="itemVar:id in arrayVar" $text="itemVar.text">item a</li>`,
-        `<li $for="itemVar:id in arrayVar" $text="itemVar.text">item 99</li>`,
-        `<li $for="itemVar:id in arrayVar" $text="itemVar.text">item d</li>`,
-        `<li $for="itemVar:id in arrayVar" $text="itemVar.text">item 3</li>`,
+        `<!--$for="itemVar in arrayVar" $key="itemVar.id"-->`,
+        `<li $for="itemVar in arrayVar" $key="itemVar.id" $text="itemVar.text">item a</li>`,
+        `<li $for="itemVar in arrayVar" $key="itemVar.id" $text="itemVar.text">item 99</li>`,
+        `<li $for="itemVar in arrayVar" $key="itemVar.id" $text="itemVar.text">item d</li>`,
+        `<li $for="itemVar in arrayVar" $key="itemVar.id" $text="itemVar.text">item 3</li>`,
       ].join("")
     );
 
