@@ -18,12 +18,13 @@ function reconcileElementChildren(src: Node, target: Node, data?: any) {
 
     switch (srcNode.nodeType) {
       case Node.TEXT_NODE:
+      case Node.COMMENT_NODE:
         if (!targetNode) {
           targetNode = srcNode.cloneNode();
           target.appendChild(targetNode);
         }
 
-        reconcileText(srcNode as Text, targetNode as Text);
+        reconcileText(srcNode, targetNode);
 
         targetIndex++;
         break;
@@ -106,7 +107,7 @@ function reconcileElementChildren(src: Node, target: Node, data?: any) {
   });
 }
 
-function reconcileText(src: Text, target: Text) {
+function reconcileText(src: Node, target: Node) {
   if (target.nodeValue !== src.nodeValue) {
     target.nodeValue = src.nodeValue;
   }

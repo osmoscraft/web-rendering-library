@@ -19,10 +19,26 @@ export const testTemplatingBasic = describe("Templating/Basic", () => {
     cleanup();
   });
 
-  it("Static template/Render", async () => {
+  it("Static template/Render/Text node", async () => {
     const { container } = setupTemplate("hello world");
 
     await expect(container.innerHTML).toEqual("hello world");
+
+    cleanup();
+  });
+
+  it("Static template/Render/Element node", async () => {
+    const { container } = setupTemplate("<span>hello world</span>");
+
+    await expect(container.innerHTML).toEqual("<span>hello world</span>");
+
+    cleanup();
+  });
+
+  it("Static template/Render/Element node", async () => {
+    const { container } = setupTemplate("<!-- hello world -->");
+
+    await expect(container.innerHTML).toEqual("<!-- hello world -->");
 
     cleanup();
   });
